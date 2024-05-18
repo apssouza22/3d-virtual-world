@@ -12,31 +12,7 @@
 
       <div id="stage" style="opacity: 1;">
          <canvas id="carCanvas" width="1088" height="1010"></canvas>
-         <div id="verticalButtons" style="display: none">
-            <label for="fileInput" class="file-input-label">
-               📁<!--🧠🚙-->
-               <input type="file" id="fileInput" accept=".car" onchange="loadCar(event)">
-            </label>
-            <button onclick="save()">💾</button>
-            <button onclick="download()">⬇️</button>
-            <button onclick="discard()">🗑️</button>
-            <button onclick="bestCar.damaged=true;">💀</button>
-            <button onclick="nnEditor.zeroAll()">0️⃣</button>
-            <button onclick="nnEditor.markAll()">✅</button>
-            <button onclick="nnEditor.unmarkAll()">✅</button>
-            <button onclick="nnEditor.removeAllSegments()">❌</button>
-            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
-            <button onclick="openOptionsPanel()">⚙️</button>
-            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
-            <label for="fileInput2" class="file-input-label">
-               🌎
-               <input type="file" id="fileInput2" accept=".world" onchange="loadWorld(event)">
-            </label>
-            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
-            <button onclick="optimize()">⚡</button>
-            <button onclick="test()">🔎</button>
-            <input id="mutationSld" type="range" orient="vertical" min="0" max="100" value="20" onchange="updateMutation()">
-         </div>
+
          <div id="inspectionSection">
          </div>
 
@@ -186,29 +162,6 @@
       <script src="./nn.js"></script>
       <script src="./decisionBoundary.js"></script>
       <script src="./multiDecisionBoundary.js"></script>
-      <!--
-      <script src="../WORLD/saves/main.world"></script>
-      <script src="../WORLD/saves/big.world"></script>
-      <script src="../WORLD/saves/final_big.world"></script>
-      <script src="../WORLD/saves/train_1.world"></script>
-      <script src="../WORLD/saves/train_1_1.world"></script>
-      <script src="../WORLD/saves/train_1_1_1.world"></script>
-      <script src="../WORLD/saves/train_0.world"></script>
-      <script src="../WORLD/saves/train_2.world"></script>
-      <script src="../WORLD/saves/train_2_2.world"></script>
-      <script src="../WORLD/saves/train_3.world"></script>
-      <script src="../WORLD/saves/train_4.world"></script>
-      <script src="../WORLD/saves/train_4_1.world"></script>
-         <script src="saves/wartsila_1.world"></script>
-         <script src="saves/wartsila_2.world"></script>
-         <script src="saves/under_bridge.world"></script>
-         <script src="saves/many_targets.world"></script>
-      <script src="../WORLD/saves/train_A.world"></script>
-      <script src="../WORLD/saves/train_1.world"></script>
-      <script src="../WORLD/saves/train_A_1.world"></script>
-      <script src="../WORLD/saves/train_A_2.world"></script>
-         <script src="saves/many_targets_small.world"></script>
-      -->
       <script src="./many_targets_small.js"></script>
       <script src="./carInfo.js"></script>
 
@@ -237,7 +190,6 @@
          const showInspectionSection = true;
          let showGrid=false;
          let verticalButtonsWidth = 0;
-         let selectedCarIndex = 0;
 
          let season = "summer";
          let wDown = false;
@@ -246,7 +198,6 @@
          let gDown = false;
 
          //check if we're in the autumn months
-
          const links = {
             Karelia:
                "https://www.karelia.fi/en/information-and-communication-technology",
@@ -264,11 +215,6 @@
          const multiDecisionBoundary = true; //always true...
          // STORE THESE IN WORLD
          const outputColors = ["green", "blue", "red", "#888"];
-
-         const initialZoom = 2; //1.5;
-         //const initialOffset = { x: 464, y: 405 }; //line
-         const initialOffset = { x: 636.5, y: 396 }; //parallel
-
          const images = generateImages([
             "🠉",
             "🠈",
@@ -321,29 +267,16 @@
                     extraInputs: [], //"s"], //"s"], //["s"], //"s"],
                     hiddenLayerNodeCounts: [],
                     outputs: ["🠉", "🠈", "🠊", "🠋"],
-                    //outputs: ["🠉", "🠋"],
-                    //outputs: ["🠉"],
-                    //outputs: ["🠈", "🠋", "🠊"],
-                    //outputs: [ "🠋"],
                  },
               };
-         //setInterfaceOptions(defaultOptions);
-
          const rightBarWidth = showInspectionSection ? 500 : 0;
-
-         if (!showInspectionSection) {
-            inspectionSection.style.display = "none";
-         }
          const carCanvas = document.getElementById("carCanvas");
-         carCanvas.width =
-            window.innerWidth - rightBarWidth - verticalButtonsWidth;
+         carCanvas.width = window.innerWidth - rightBarWidth - verticalButtonsWidth;
          carCanvas.height = window.innerHeight;
 
          goToPanel.style.left = carCanvas.width / 2 + "px";
          followBtn.style.left = carCanvas.width - 120 + "px";
          followBtn.style.top = window.innerHeight - 120 + "px";
-         //manualBtn.style.left = 0 + "px";
-         //manualBtn.style.top = "8px";//window.innerHeight - 120 + "px";
 
          if (showVerticalButtons) {
             verticalButtons.style.display = "block";
@@ -387,21 +320,8 @@
          });
 
          const nnCanvas = document.createElement("canvas");
-         nnCanvas.height =
-            window.innerHeight -
-            rightBarWidth -
-            (showDecisionBoundary ? 300 : 0);
+         nnCanvas.height = window.innerHeight - rightBarWidth - (showDecisionBoundary ? 300 : 0);
          nnCanvas.width = rightBarWidth;
-
-         //changeTarget(goingToSelect);
-
-         /*
-const worldString = localStorage.getItem("world");
-const world = worldString
-   ? World.load(JSON.parse(worldString))
-   : new World(new Graph());
-world.generate(false);
-*/
 
          const grid = Grid.load(carCanvas, world, world.grid);
 
@@ -413,15 +333,13 @@ world.generate(false);
             true,
             0
          );
-         //Visualizer.addEventListeners(decisionBoundaryCanvas);
-
          const carCtx = carCanvas.getContext("2d");
-
          const carMarkings = world.markings.filter((m) => m instanceof Start);
 
          let stopBorders = world.markings
             .filter((m) => m instanceof Stop)
             .map((s) => [s.border.p2, s.border.p1]);
+
          let yieldCrossingBorders = world.markings
             .filter((m) => m instanceof Yield)
             .map((s) => [s.border.p2, s.border.p1])
@@ -503,15 +421,7 @@ world.generate(false);
                cars[i].nn = NN.load(carInfo.nn, nnCanvas.height);
 
                if (i > 0) {
-                  /*
-         NeuralNetwork.mutate(
-               cars[i].brain,
-               0.2,
-               Visualizer.selectedBiases,
-               Visualizer.selectedWeights
-         );
-         */
-                  cars[i].nn.mutate(mutationSld.value / 100);
+
                }
             }
          }

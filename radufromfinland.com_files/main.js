@@ -1,7 +1,6 @@
 function generateCarInspector(index) {
-    const container = document.createElement("div");
-
     const c3Margin = 20;
+    const container = document.createElement("div");
     const c3 = document.createElement("canvas");
     c3.height = rightBarWidth;
     c3.width = rightBarWidth;
@@ -11,19 +10,16 @@ function generateCarInspector(index) {
     c3.style.backgroundColor = "#333";
 
     miniMap = new MiniMap(c3, world.graph, rightBarWidth - c3Margin * 2);
-
     miniMap.targets = targets;
 
     const d = document.createElement("div");
     const db = multiDecisionBoundary
         ? new MultiDecisionBoundary(d, cars[index].nn, outputColors)
         : new DecisionBoundary(d, cars[index].nn);
-    //container.appendChild(c);
+
     container.appendChild(nnCanvas);
     container.appendChild(c3);
-    if (showDecisionBoundary) {
-        container.appendChild(d);
-    }
+
     container.style.marginRight = "5px";
     container.style.display = "flex";
     container.style.flexDirection = "column";
@@ -44,13 +40,6 @@ function save() {
     if (!bestCar) {
         alert("All cars are damaged");
     }
-    //const brainCopy=JSON.parse(JSON.stringify(bestCar.brain));
-    //brainCopy.levels[0].inputs=new Array(brainCopy.levels[0].inputs.length)
-    /*brainCopy.levels[0].inputs=new Array(brainCopy.levels[0].inputs.length)
-   this.inputs = new Array(inputCount);
-   this.outputs = new Array(outputCount);
-   this.biases = new Array(outputCount);*/
-
     const brainString = JSON.stringify(bestCar.brain);
     localStorage.setItem("bestBrain", brainString);
 
@@ -69,15 +58,8 @@ function download() {
         "href",
         "data:application/json;charset=utf-8," + encodeURIComponent(carString)
     );
-    /*
-   let fileName = prompt("File Name", "brain.json");
-   if (fileName.indexOf(".json") == -1) {
-      fileName += ".json";
-   }
-*/
     const fileName = "name.car";
     element.setAttribute("download", fileName);
-
     element.click();
 }
 
@@ -85,22 +67,13 @@ function discard() {
     localStorage.removeItem("bestBrain");
     localStorage.removeItem("car");
     localStorage.removeItem("selectedWeightsAndBiases");
-    /*
-   NeuralNetwork.mutate(bestCar.brain, 1);
-   bestCar.setOptions(bestCar);
-   save();*/
 }
 
 function generateCars(N, markings) {
     const cars = [];
     let i = 0;
     while (i < N) {
-        const { center, directionVector, width, height } =
-            markings[i % markings.length];
-        //const maxSpeed = defaultOptions.maxSpeeds[i % defaultOptions.maxSpeeds.length];
-        //for (let i = 1; i <= N; i++) {
-        //cars.push(new Car(center.x, center.y, 30, 50, "AI", -angle(direction)));
-
+        const { center, directionVector, width, height } = markings[i % markings.length];
         const alpha = -angle(directionVector);
         cars.push(
             new Car(center.x, center.y, alpha, {
@@ -128,10 +101,6 @@ function animate(time) {
         }
     }
     viewport.reset();
-    /*
-   for (let i = 0; i < traffic.length; i++) {
-      traffic[i].update(road.borders, []);
-   }*/
 
     // MAKE SURE CHANGE ABOVE AS WELL
     lightBorders = world.markings
@@ -174,23 +143,6 @@ function animate(time) {
                 cars[i].layer = 1;
             }
         }
-        /*
-      const segs = getNearestSegments(cars[i], world.graph.segments, 100);
-      let changeLayer = true;
-      for (const seg of segs) {
-         if (seg.layer == cars[i].layer) {
-            changeLayer = false;
-            break;
-         }
-      }
-      if (cars[i].layer==null||changeLayer) {
-         cars[i].layer = segs[0].layer;
-         cars[i].segment=segs[0];
-      }*/
-
-        //console.log(segs,cars[i].layer);
-        //console.log(seg);
-        //const roadBorders = world.getNearbyRoadBorders(cars[i]).map((s) => [s.p1, s.p2]);
         const _borders = world
             .getNearbyRoadBorders(cars[i]) //world.roadBorders
             .filter((b) => b.layer == cars[i].layer)
@@ -249,10 +201,6 @@ function animate(time) {
             assignPath([cars[i]], newTarget);
             if (cars[i] == bestCar) {
                 goingToSelect.value = newTarget.name;
-                /*goingToSelect.style.backgroundColor =cars[i].color;
-                setTimeout(() => {
-                    goingToSelect.style.backgroundColor = "white";
-                }, 1000);*/
             }
         }
     }
@@ -271,13 +219,6 @@ function animate(time) {
             }
         }
     }
-
-    /*
-   const aliveCars = cars.filter((c) => c.damaged == false);
-   const carSubset = aliveCars.length != 0 ? aliveCars : cars;
-   bestCar = carSubset.find(
-      (c) => c.distance == Math.max(...carSubset.map((c) => c.distance))
-   );*/
     let bestI = -1;
     let bestFittness = 0;
     for (let i = 0; i < cars.length; i += carMarkings.length) {
@@ -315,26 +256,9 @@ function animate(time) {
         }
     }
 
-    /*
-   carCanvas.height = carCanvas.height;
-   networkCanvas.height = networkCanvas.height;
-
-   carCtx.save();
-
-   carCtx.scale(ZOOM, ZOOM);
-   carCtx.translate(
-      -bestCar.x + (carCanvas.width * 0.5) / ZOOM,
-      -bestCar.y + (carCanvas.height * 0.5) / ZOOM
-   );
-   world.draw(carCtx, bestCar);
-*/
-
     world.cars = cars;
     world.bestCar = bestCar;
     const viewPoint = scale(viewport.getOffset(), -1);
-
-    const graphEditor = new GraphEditor(viewport, world.graph);
-
     const regScaler = showGrid?1:2;
     const regionWidth = carCanvas.width * regScaler;
     const regionHeight = carCanvas.height * regScaler;
@@ -371,28 +295,6 @@ function animate(time) {
         decisionBoundaries[0].draw(cars.map((c) => c.nn.inputNodes));
     }
     requestAnimationFrame(animate);
-}
-
-function loadBrain(event) {
-    const fileInput = event.target;
-    const file = fileInput.files[0];
-
-    if (!file) {
-        console.error("No file selected.");
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-        const fileContent = event.target.result;
-        /*const jsonData = JSON.parse(fileContent);
-      bestCar.brain = jsonData;*/
-        localStorage.setItem("bestBrain", fileContent);
-        location.reload();
-    };
-
-    reader.readAsText(file);
 }
 
 function loadCar(event) {

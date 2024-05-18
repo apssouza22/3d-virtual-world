@@ -125,14 +125,108 @@ function degToRad(degree) {
    return (degree * Math.PI) / 180;
 }
 
-function getRandomColor() {
-   const hue = 290 + Math.random() * 260;
-   return "hsl(" + hue + ", 100%, 60%)";
-}
 
 function getFake3dPoint(point, viewPoint, height) {
    const dir = normalize(subtract(point, viewPoint));
    const dist = distance(point, viewPoint);
    const scaler = Math.atan(dist / 300) / (Math.PI / 2);
    return add(point, scale(dir, height * scaler),false);
+}
+
+function polysIntersect(poly1, poly2) {
+   for (let i = 0; i < poly1.length; i++) {
+      for (let j = 0; j < poly2.length; j++) {
+         const touch = getIntersection(
+             poly1[i],
+             poly1[(i + 1) % poly1.length],
+             poly2[j],
+             poly2[(j + 1) % poly2.length]
+         );
+         if (touch) {
+            return true;
+         }
+      }
+   }
+   return false;
+}
+
+function getRGBA(value) {
+   const alpha = Math.abs(value);
+   const R = value < 0 ? 0 : 255;
+   const G = R;
+   const B = value > 0 ? 0 : 255;
+   return "rgba(" + R + "," + G + "," + B + "," + alpha + ")";
+}
+
+function getRandomColor() {
+   const hue = 290 + Math.random() * 260;
+   return "hsl(" + hue + ", 100%, 60%)";
+}
+
+
+function direction({ x, y }) {
+   return Math.atan2(y, x);
+}
+
+function generateImages(emojis, size = 20) {
+   const result = {};
+   for (const color of ["yellow", "blue","gray"]) {
+      for (const emoji of emojis) {
+         const canvas = document.createElement("canvas");
+         canvas.width = size + 10;
+         canvas.height = size + 10;
+
+         const ctx = canvas.getContext("2d");
+         ctx.beginPath();
+         ctx.textAlign = "center";
+         ctx.textBaseline = "middle";
+         ctx.fillStyle="white";
+         ctx.font = size + "px Courier";
+
+         const colorHueMap = {
+            red: 0,
+            yellow: 60,
+            green: 120,
+            cyan: 180,
+            blue: 240,
+            magenta: 300,
+         };
+         const hue = -45 + colorHueMap[color];
+         if (!isNaN(hue)) {
+            /*
+         ctx.filter = `
+            brightness(2)
+            contrast(0.3)
+            sepia(1)
+            brightness(0.7)
+            hue-rotate(${hue}deg)
+            saturate(3)
+            contrast(3)
+         `;
+         */
+            ctx.filter = `
+            brightness(2)
+            contrast(0.6)
+            sepia(1)
+            brightness(0.7)
+            hue-rotate(${hue}deg)
+            brightness(0.9)
+            saturate(3)
+            contrast(3)
+         `;
+         } else {
+            ctx.filter = "grayscale(1)";
+         }
+
+         ctx.fillText(emoji, canvas.width / 2, canvas.height / 2);
+
+         if (!result[emoji]) {
+            result[emoji] = {};
+         }
+         result[emoji][color] = new Image();
+         result[emoji][color].src = canvas.toDataURL();
+      }
+   }
+   return result;
+
 }

@@ -24,6 +24,9 @@ class World {
 
         this.markings = [];
 
+        /**
+         * @type {Car[]}
+         */
         this.cars = [];
 
         this.bestCar = null;
@@ -93,40 +96,6 @@ class World {
         return world;
     }
 
-    isOnRoad(car) {
-        const data = grid.getDataFromNearbyCells(car);
-
-        for (const e of data.envelopes) {
-            if (e.poly.containsPoly(new Polygon(car.polygon))) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    getNearbyRoadBorders(car) {
-        //const data = grid.getDataFromCellsInActiveRegion(car.getBounds());
-        const data = grid.getDataFromNearbyCells(car);
-
-        return data.roadBorders;
-    }
-
-    getNearbyItemBorders(car) {
-        //const data = grid.getDataFromCellsInActiveRegion(car.getBounds());
-        const data = grid.getDataFromNearbyCells(car);
-
-        return data.buildings
-            .concat(data.trees)
-            .map((i) => i.base.segments)
-            .flat();
-    }
-
-    getNearestGraphSegments(car) {
-        //const data = grid.getDataFromCellsInActiveRegion(car.getBounds());
-        const data = grid.getDataFromNearbyCells(car);
-        const segs = getNearestSegments(car, data.graphSegments, 300);
-        return segs;
-    }
 
     generate() {
         this.envelopes.length = 0;

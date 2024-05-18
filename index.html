@@ -43,6 +43,8 @@
 <script src="src/items/tree.js"></script>
 <script src="src/items/building.js"></script>
 <script src="src/items/water.js"></script>
+<script src="src/items/road.js"></script>
+<script src="src/items/car.js"></script>
 <script src="src/utils.js"></script>
 <script src="src/graph.js"></script>
 <script src="src/osm.js"></script>
@@ -50,19 +52,8 @@
 <script src="src/segment.js"></script>
 <script src="src/polygon.js"></script>
 <script src="src/envelope.js"></script>
-<script src="src/nn.js"></script>
-<script src="src/decisionBoundary.js"></script>
-<script src="src/multiDecisionBoundary.js"></script>
 <script src="src/many_targets_small.js"></script>
-<script src="src/carInfo.js"></script>
-
 <script src="src/miniMap.js"></script>
-<script src="src/network.js"></script>
-<script src="src/sensor.js"></script>
-<script src="src/utils(1).js"></script>
-<script src="src/items/road.js"></script>
-<script src="src/controls.js"></script>
-<script src="src/items/car.js"></script>
 
 <script src="src/main.js"></script>
 
@@ -73,8 +64,6 @@
     const stopForFittness = true;
     let showGrid = false;
     let verticalButtonsWidth = 0;
-    const outputColors = ["green", "blue", "red", "#888"];
-    const images = generateImages(["🠉", "🠈", "🠊", "🠋", "⬉", "⬆", "⬈", "⏱️", "🛑", "🚦", "🎯", "🚶", "⚠️", "🅿️"]);
     const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
 
     const defaultOptions = localStorage.getItem("defaultOptions")
@@ -121,36 +110,20 @@
     const carCtx = carCanvas.getContext("2d");
     const carMarkings = world.markings.filter((m) => m instanceof Start);
 
-    let stopBorders = world.markings
-        .filter((m) => m instanceof Stop)
-        .map((s) => [s.border.p2, s.border.p1]);
-
-    let yieldCrossingBorders = world.markings
-        .filter((m) => m instanceof Yield)
-        .map((s) => [s.border.p2, s.border.p1])
-        .concat(
-            world.markings
-                .filter((m) => m instanceof Crossing)
-                .map((s) => [
-                    [s.borders[0].p1, s.borders[0].p2],
-                    [s.borders[1].p1, s.borders[1].p2],
-                    [s.borders[0].p2, s.borders[0].p1],
-                    [s.borders[1].p2, s.borders[1].p1],
-                ])
-                .flat()
-        );
-
     let lightBorders = world.markings
-        .filter( (m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
+        .filter((m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
         .map((s) => [s.border.p1, s.border.p2]);
 
     const targets = world.markings.filter((m) => m instanceof Target);
     const optimizing = localStorage.getItem("optimizing");
     const N = optimizing ? maxCarCount : carMarkings.length;
+    /**
+     * @type {Car[]}
+     */
     const cars = generateCars(N, carMarkings);
-
+    world.cars = cars;
     // TODO: implement a better way to fly to the best car
-    // viewport.flyTo(bestCar, true);
+    // viewport.flyTo(cars[0], true);
 
     generateMiniMap(world);
 
@@ -175,30 +148,4 @@
 
 
 </body>
-<grammarly-desktop-integration data-grammarly-shadow-root="true">
-    <template shadowrootmode="open">
-        <style>
-            div.grammarly-desktop-integration {
-                position: absolute;
-                width: 1px;
-                height: 1px;
-                padding: 0;
-                margin: -1px;
-                overflow: hidden;
-                clip: rect(0, 0, 0, 0);
-                white-space: nowrap;
-                border: 0;
-                -moz-user-select: none;
-                -webkit-user-select: none;
-                -ms-user-select: none;
-                user-select: none;
-            }
-
-            div.grammarly-desktop-integration:before {
-                content: attr(data-content);
-            }
-        </style>
-        <div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div>
-    </template>
-</grammarly-desktop-integration>
 </html>

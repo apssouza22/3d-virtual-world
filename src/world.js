@@ -51,16 +51,6 @@ class World {
         world.spacing = info.spacing;
         world.treeSize = info.treeSize;
         world.envelopes = info.envelopes.map((e) => Envelope.load(e));
-        /*
-        if (info.layer0) {
-           world.layer0 = info.layer0.map(
-              (s) => new Segment(s.p1, s.p2, s.oneWay, s.layer)
-           );
-           world.layer1 = info.layer1.map(
-              (s) => new Segment(s.p1, s.p2, s.oneWay, s.layer)
-           );
-        }
-        */
         if (info.roadBorders) {
             world.roadBorders = info.roadBorders.map(
                 (b) =>
@@ -124,120 +114,6 @@ class World {
         this.laneGuides.push(...this.#generateLaneGuides());
 
         this.intersections = null;
-    }
-
-    addMoreTrees(maxTryCount = 10) {
-        const points = [
-            ...this.roadBorders.map((s) => [s.p1, s.p2]).flat(),
-            ...this.buildings.map((b) => b.base.points).flat(),
-        ];
-        const left = Math.min(...points.map((p) => p.x));
-        const right = Math.max(...points.map((p) => p.x));
-        const top = Math.min(...points.map((p) => p.y));
-        const bottom = Math.max(...points.map((p) => p.y));
-
-        const illegalPolys = [
-            ...this.buildings.map((b) => b.base),
-            ...this.envelopes.map((e) => e.poly),
-        ];
-        if (this.water) {
-            illegalPolys.push(...this.water.polys);
-        }
-
-        const trees = this.trees;
-        let tryCount = 0;
-        while (tryCount < maxTryCount) {
-            const p = new Point(
-                lerp(left, right, Math.random()),
-                lerp(bottom, top, Math.random())
-            );
-
-            // check if tree inside or nearby building / road
-            let keep = true;
-            for (const poly of illegalPolys) {
-                if (
-                    poly.containsPoint(p) ||
-                    poly.distanceToPoint(p) < this.treeSize / 2
-                ) {
-                    keep = false;
-                    break;
-                }
-            }
-            if (keep == false && this.water) {
-                for (const poly of this.water.innerPolys) {
-                    if (
-                        poly.containsPoint(p) ||
-                        poly.distanceToPoint(p) < this.treeSize / 2
-                    ) {
-                        keep = true;
-                        break;
-                    }
-                }
-            }
-
-            // check if tree too close to other trees
-            if (keep) {
-                for (const tree of trees) {
-                    if (distance(tree.center, p) < this.treeSize) {
-                        keep = false;
-                        break;
-                    }
-                }
-            }
-
-            // avoiding trees in the middle of nowhere
-            if (keep) {
-                let closeToSomething = false;
-                for (const poly of illegalPolys) {
-                    if (poly.distanceToPoint(p) < this.treeSize * 2) {
-                        closeToSomething = true;
-                        break;
-                    }
-                }
-                keep = closeToSomething;
-            }
-
-            if (keep) {
-                trees.push(new Tree(p, this.treeSize));
-                tryCount = 0;
-            }
-            tryCount++;
-        }
-        return trees;
-    }
-
-    generateShortestPathBorders(car, endPoint) {
-        if (!car.segment) {
-            return [];
-        }
-        //let start = performance.now()
-        const path = this.graph.shortestPath(car, endPoint);
-        //let mid=performance.now();
-        //const path2 = this.graph.shortestPath_SLOW(car, endPoint);
-        //let end=performance.now();
-        /*for(let i=0;i<path.length;i++){
-              if(!path[i].equals(path2[i])){
-                  console.log("PROBLEM");
-                  break;
-              }
-          }*/
-        let st = performance.now();
-        const tmpEnvelopes = [];
-        const skels = [];
-        for (let i = 1; i < path.length; i++) {
-            const seg = new Segment(path[i - 1], path[i]);
-            skels.push(seg);
-            tmpEnvelopes.push(
-                new Envelope(seg, this.roadWidth, this.roadRoundness)
-            );
-        }
-        car.shortestPath = skels;
-        let mid = performance.now();
-        const segments = Polygon.union(tmpEnvelopes.map((e) => e.poly));
-        let end = performance.now();
-        //console.log(mid-st,end-mid);
-
-        return segments.map((s) => [s.p1, s.p2]);
     }
 
     #generateLaneGuides() {
@@ -536,16 +412,6 @@ class World {
             }
 
             for (const c of allCeilings) {
-                for (const car of this.cars) {
-                    if (
-                        car.state != "helicopter" &&
-                        c.base.containsPoly(new Polygon(car.polygon))
-                    ) {
-                        ctx.globalAlpha = 0.5;
-                        break;
-                    }
-                }
-
 
                 if (c.dark) {
                     c.draw(ctx, {
@@ -571,8 +437,6 @@ class World {
                         c.imgSize,
                         c.imgSize
                     );
-                    //ctx.drawImage(c.img,center.x,center.y,100,100);
-                    //center.draw(ctx);
                 }
                 ctx.globalAlpha = 1;
             }

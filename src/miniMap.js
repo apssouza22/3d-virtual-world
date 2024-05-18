@@ -10,6 +10,7 @@ class MiniMap {
         canvas.height = this.size;
         this.ctx = canvas.getContext("2d");
 
+        /** @type {Target[]} */
         this.targets = [];
 
         this.setupWarp();
@@ -43,13 +44,15 @@ class MiniMap {
                 color: "white",
                 size: 30 / scaler,
             });
-            // this.ctx.drawImage(
-            //     target.img,
-            //     p.x - size / 2,
-            //     p.y - size / 2,
-            //     size,
-            //     size
-            // );
+            if(target.img){
+                this.ctx.drawImage(
+                    target.img,
+                    p.x - size / 2,
+                    p.y - size / 2,
+                    size,
+                    size
+                );
+            }
         }
         //TODO: implement a draw function to draw everything in the miniMap
         for (const point of this.points) {

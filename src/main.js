@@ -29,12 +29,12 @@ function generateCars(N, markings) {
     while (i < N) {
         const {center, directionVector, width, height} = markings[i % markings.length];
         const alpha = -angle(directionVector);
-        cars.push(new Car(center.x, center.y, alpha, {
-                ...defaultOptions, //,
-                //maxSpeed,
-                color: carColors[i % carColors.length],
-            })
-        );
+        let car = new Car(center.x, center.y, alpha, {
+            ...defaultOptions, //,
+            //maxSpeed,
+            color: carColors[i % carColors.length],
+        });
+        cars.push(car);
         i++;
     }
     return cars;
@@ -76,19 +76,3 @@ function animate(time) {
     requestAnimationFrame(animate);
 }
 
-function giveAllPaths() {
-    if (targets.length == 0) {
-        return;
-    }
-
-    for (let i = cars.length - 1; i >= 0; i--) {
-        let targetIndex = 0;
-        cars[i].polygon = cars[i].createPolygon();
-        // cars[i].segment = getNearestSegment(cars[i], world.graph.segments);
-        // cars[i].assignedBorders = world.generateShortestPathBorders(
-        //     cars[i],
-        //     targets[targetIndex].center
-        // );
-        // cars[i].destination = targets[targetIndex];
-    }
-}

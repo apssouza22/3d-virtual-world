@@ -6,14 +6,9 @@ class Car {
         this.speed = 0;
         this.angle = angle + Math.PI / 2;
 
-        this.damaged = false;
-        this.distance = 0;
-        this.fittness = 0;
-
-        this.message = null;
         this.frameCount = 0;
         this.state = "car";
-
+        this.polygon = this.createPolygon();
         this.setOptions(carOptions);
     }
 

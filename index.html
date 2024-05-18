@@ -57,11 +57,15 @@
 
 <script src="src/main.js"></script>
 
-<script defer="">
+<script>
+    /**
+     * @type {World}
+     */
+    const world = World.load(worldData);
+
     loading.style.opacity = 0;
     let followBestCar = true;
     let manual = false;
-    const stopForFittness = true;
     let showGrid = false;
     let verticalButtonsWidth = 0;
     const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
@@ -129,8 +133,6 @@
 
     let lastLoop = new Date();
     localStorage.removeItem("optimizing");
-
-    giveAllPaths();
 
     setTimeout(() => {
         stage.style.opacity = 1;

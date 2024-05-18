@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<!-- saved from url=(0064)https://radufromfinland.com/projects/virtualworld/CAR/index.html -->
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+      <title>Self-driving car - No libraries</title>
+      <link rel="stylesheet" href="./style.css">
+   </head>
+   <body data-new-gr-c-s-check-loaded="14.1173.0" data-gr-ext-installed="">
+      <div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); opacity: 0; transition: all 0.5s ease 0s; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px; display: none;">
+         🚙🚙🚙🚙🚙 LOADING
+         <span style="transform: scale(-1, 1); display: inline-block">🚙🚙🚙🚙🚙</span>
+      </div>
+
+      <div id="stage" style="opacity: 1;">
+         <canvas id="carCanvas" width="1088" height="1010"></canvas>
+         <div id="verticalButtons" style="display: none">
+            <label for="fileInput" class="file-input-label">
+               📁<!--🧠🚙-->
+               <input type="file" id="fileInput" accept=".car" onchange="loadCar(event)">
+            </label>
+            <button onclick="save()">💾</button>
+            <button onclick="download()">⬇️</button>
+            <button onclick="discard()">🗑️</button>
+            <button onclick="bestCar.damaged=true;">💀</button>
+            <button onclick="nnEditor.zeroAll()">0️⃣</button>
+            <button onclick="nnEditor.markAll()">✅</button>
+            <button onclick="nnEditor.unmarkAll()">✅</button>
+            <button onclick="nnEditor.removeAllSegments()">❌</button>
+            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
+            <button onclick="openOptionsPanel()">⚙️</button>
+            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
+            <label for="fileInput2" class="file-input-label">
+               🌎
+               <input type="file" id="fileInput2" accept=".world" onchange="loadWorld(event)">
+            </label>
+            <spacer type="vertical" width="100" height="100"> &nbsp; </spacer>
+            <button onclick="optimize()">⚡</button>
+            <button onclick="test()">🔎</button>
+            <input id="mutationSld" type="range" orient="vertical" min="0" max="100" value="20" onchange="updateMutation()">
+         </div>
+         <div id="inspectionSection">
+         </div>
+
+         <div id="optionsPanel" class="panel" style="display: none">
+            <label for="rayCount">Ray Count</label>
+            <input id="rayCount" type="number">
+            <br>
+            <label for="rayLength">Ray Length</label>
+            <input id="rayLength" type="number">
+            <br>
+            <label for="raySpread">Ray Spread</label>
+            <input id="raySpread" type="number">
+            <br>
+            <label for="rayOffset">Ray Offset</label>
+            <input id="rayOffset" type="number">
+            <br>
+            <span>Outputs</span>
+            <div id="outputs">
+               <button id="output_forward" onclick="toggleOutput(&#39;🠉&#39;)" style="background-color: white;">
+                  🠉
+               </button>
+               <button id="output_left" onclick="toggleOutput(&#39;🠈&#39;)" style="background-color: white;">🠈</button>
+               <button id="output_right" onclick="toggleOutput(&#39;🠊&#39;)" style="background-color: white;">🠊</button>
+               <button id="output_reverse" onclick="toggleOutput(&#39;🠋&#39;)" style="background-color: white;">
+                  🠋
+               </button>
+            </div>
+            <br>
+            <div style="display: flex">
+               <label for="hiddenOnOff">Hidden</label>
+               <input type="checkbox" id="hiddenOnOff" onchange="toggleHidden()">
+               <label for="hiddenCount" style="margin-left: 10px">Count</label>
+               <input id="hiddenCount" type="text" style="width: 30px; margin-left: 5px" value="2,3">
+            </div>
+            <label for="aiOnOff">AI</label>
+            <input type="checkbox" id="aiOnOff">
+            <label for="autoForwardOnOff" style="margin-left: 30px">Auto 🠉</label>
+            <input type="checkbox" id="autoForwardOnOff">
+            <br>
+            <label for="speedOnOff">Speed Sensor</label>
+            <input type="checkbox" id="speedOnOff">
+            <br>
+            <label for="stopOnOff">Stop Detector</label>
+            <input type="checkbox" id="stopOnOff">
+            <br>
+            <label for="yieldOnOff">Yield Detector</label>
+            <input type="checkbox" id="yieldOnOff">
+            <br>
+            <label for="lightOnOff">Light Detector</label>
+            <input type="checkbox" id="lightOnOff">
+            <br>
+            <label for="crossingOnOff">Crossing Detector</label>
+            <input type="checkbox" id="crossingOnOff">
+            <br>
+            <label for="parkingOnOff">Parking Detector</label>
+            <input type="checkbox" id="parkingOnOff">
+            <br>
+            <label for="targetsOnOff">Target Detector</label>
+            <input type="checkbox" id="targetsOnOff">
+            <br>
+            <br>
+            <button onclick="updateOptions()" style="background-color: lime">
+               ✔️
+            </button>
+            <button onclick="cancelOptions()" style="background-color: pink">
+               ❌
+            </button>
+         </div>
+         <div id="goToPanel" style="display: block; left: 544px;">
+            <button id="manualBtn" title="Manual Override" onclick="toggleManual()" style="
+                  outline: none;
+                  font-size: 24px;
+                  background-color: rgba(0, 0, 0, 0);
+                  border-radius: 10px;
+                  margin-top: -6px;
+                  height: 40px;
+                  padding-top: 1px;
+                  padding-bottom: 4px;
+               ">
+               🛞
+            </button>
+            Going to
+            <select id="goingToSelect" onchange="changeTarget(this)" style="margin-right: 41px; transition: 0.5s">
+               <option value="Wärtsilä" style="background-image: url(https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelia.png)">
+                  Karelia (Wärtsilä)
+               </option>
+               <option value="Tikkarinne">Karelia (Tikkarinne)</option>
+               <option value="Arbonaut">Arbonaut</option>
+               <option value="CGI">CGI</option>
+               <option value="Siili">Siili Solutions</option>
+               <option value="Blancco">Blancco</option>
+               <option value="Karelics">Karelics</option>
+               <option value="Solenovo">Solenovo</option>
+               <option value="Nolwenture">Nolwenture</option>
+               <option value="UEF">UEF</option>
+            </select>
+            <img onclick="navToLink()" id="goingToImg" src="./karelia.png">
+         </div>
+
+         <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
+            🧿
+         </button>
+
+         <div style="
+               position: absolute;
+               background-color: rgba(255, 255, 255, 0.5);
+               font-size: 12px;
+               bottom: 0px;
+               left: 0px;
+               font-family: Arial;
+            ">
+            Using data from
+            <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>
+         </div>
+      </div>
+      <script src="./world.js"></script>
+      <script src="./grid.js"></script>
+      <script src="./viewport.js"></script>
+      <script src="./marking.js"></script>
+      <script src="./stop.js"></script>
+      <script src="./start.js"></script>
+      <script src="./crossing.js"></script>
+      <script src="./parking.js"></script>
+      <script src="./light.js"></script>
+      <script src="./target.js"></script>
+      <script src="./yield.js"></script>
+      <script src="./markingEditor.js"></script>
+      <script src="./graphEditor.js"></script>
+      <script src="./crossingEditor.js"></script>
+      <script src="./stopEditor.js"></script>
+      <script src="./startEditor.js"></script>
+      <script src="./parkingEditor.js"></script>
+      <script src="./lightEditor.js"></script>
+      <script src="./targetEditor.js"></script>
+      <script src="./yieldEditor.js"></script>
+      <script src="./tree.js"></script>
+      <script src="./building.js"></script>
+      <script src="./water.js"></script>
+      <script src="./utils.js"></script>
+      <script src="./graph.js"></script>
+      <script src="./osm.js"></script>
+      <script src="./point.js"></script>
+      <script src="./segment.js"></script>
+      <script src="./polygon.js"></script>
+      <script src="./envelope.js"></script>
+      <script src="./nnEditor.js"></script>
+      <script src="./nn.js"></script>
+      <script src="./decisionBoundary.js"></script>
+      <script src="./multiDecisionBoundary.js"></script>
+      <!--
+      <script src="../WORLD/saves/main.world"></script>
+      <script src="../WORLD/saves/big.world"></script>
+      <script src="../WORLD/saves/final_big.world"></script>
+      <script src="../WORLD/saves/train_1.world"></script>
+      <script src="../WORLD/saves/train_1_1.world"></script>
+      <script src="../WORLD/saves/train_1_1_1.world"></script>
+      <script src="../WORLD/saves/train_0.world"></script>
+      <script src="../WORLD/saves/train_2.world"></script>
+      <script src="../WORLD/saves/train_2_2.world"></script>
+      <script src="../WORLD/saves/train_3.world"></script>
+      <script src="../WORLD/saves/train_4.world"></script>
+      <script src="../WORLD/saves/train_4_1.world"></script>
+         <script src="saves/wartsila_1.world"></script>
+         <script src="saves/wartsila_2.world"></script>
+         <script src="saves/under_bridge.world"></script>
+         <script src="saves/many_targets.world"></script>
+      <script src="../WORLD/saves/train_A.world"></script>
+      <script src="../WORLD/saves/train_1.world"></script>
+      <script src="../WORLD/saves/train_A_1.world"></script>
+      <script src="../WORLD/saves/train_A_2.world"></script>
+         <script src="saves/many_targets_small.world"></script>
+      -->
+      <script src="./many_targets_small.js"></script>
+      <script src="./carInfo.js"></script>
+
+      <script src="./miniMap.js"></script>
+      <script src="./visualizer.js"></script>
+      <script src="./network.js"></script>
+      <script src="./sensor.js"></script>
+      <script src="./utils(1).js"></script>
+      <script src="./road.js"></script>
+      <script src="./controls.js"></script>
+      <script src="./car.js"></script>
+
+      <script src="./main.js"></script>
+
+      <script defer="">
+         goToPanel.style.display = "block"; 
+         loading.style.opacity = 0;
+
+         let followBestCar = true;
+         let manual = false;
+         const maxCarCount = 10; //for optimization
+         const stopForFittness = true;
+         const showVerticalButtons = false; // actually editing mode, enables nneditor and sets useHardcodedBrain to opposite and dec boundary visibility
+         const showDecisionBoundary = showVerticalButtons;
+         const useHardCodedBrain = !showVerticalButtons;
+         const showInspectionSection = true;
+         let showGrid=false;
+         let verticalButtonsWidth = 0;
+         let selectedCarIndex = 0;
+
+         let season = "summer";
+         let wDown = false;
+         let aDown = false;
+         let sDown = false;
+         let gDown = false;
+
+         //check if we're in the autumn months
+
+         const links = {
+            Karelia:
+               "https://www.karelia.fi/en/information-and-communication-technology",
+            CGI: "https://www.cgi.com/en",
+            Arbonaut: "https://www.arbonaut.com/en",
+            Karelics: "https://karelics.fi/",
+            Nolwenture: "https://www.nolwenture.com/",
+            UEF: "https://www.uef.fi/en",
+            Solenovo: "https://www.solenovo.fi",
+            Siili: "https://www.siili.com",
+            Blancco: "https://www.blancco.com",
+         };
+         let linkToVisit = links["Karelia"];
+
+         const multiDecisionBoundary = true; //always true...
+         // STORE THESE IN WORLD
+         const outputColors = ["green", "blue", "red", "#888"];
+
+         const initialZoom = 2; //1.5;
+         //const initialOffset = { x: 464, y: 405 }; //line
+         const initialOffset = { x: 636.5, y: 396 }; //parallel
+
+         const images = generateImages([
+            "🠉",
+            "🠈",
+            "🠊",
+            "🠋",
+            "⬉",
+            "⬆",
+            "⬈",
+            "⏱️",
+            "🛑",
+            "🚦",
+            "🎯",
+            "🚶",
+            "⚠️",
+            "🅿️",
+         ]);
+
+         const carColors = [
+            "#06F",
+            "#F44",
+            "#0B0",
+            "#EB0",
+            "magenta",
+            "cyan",
+            "black",
+         ];
+
+         if (localStorage.getItem("mutation")) {
+            mutationSld.value = localStorage.getItem("mutation") * 100;
+         }
+
+         const defaultOptions = localStorage.getItem("defaultOptions")
+            ? JSON.parse(localStorage.getItem("defaultOptions"))
+            : {
+                 type: "AI", // "KEYS" "DUMMY"
+                 width: 30,
+                 height: 50, //height: 90,
+                 maxSpeed: 3,
+                 color: "blue", //color:"orange",
+                 acceleration: 0.2,
+                 friction: 0.1,
+                 autoForward: true,
+                 sensorOptions: {
+                    rayCount: 2,
+                    rayLength: 250,
+                    raySpread: 0.6, //Math.PI / 2, // Math.PI / 2,
+                    rayOffset: 0, //-Math.PI/2//0//-Math.PI/4//, rayOffset: 0,
+                 },
+                 brainOptions: {
+                    extraInputs: [], //"s"], //"s"], //["s"], //"s"],
+                    hiddenLayerNodeCounts: [],
+                    outputs: ["🠉", "🠈", "🠊", "🠋"],
+                    //outputs: ["🠉", "🠋"],
+                    //outputs: ["🠉"],
+                    //outputs: ["🠈", "🠋", "🠊"],
+                    //outputs: [ "🠋"],
+                 },
+              };
+         //setInterfaceOptions(defaultOptions);
+
+         const rightBarWidth = showInspectionSection ? 500 : 0;
+
+         if (!showInspectionSection) {
+            inspectionSection.style.display = "none";
+         }
+         const carCanvas = document.getElementById("carCanvas");
+         carCanvas.width =
+            window.innerWidth - rightBarWidth - verticalButtonsWidth;
+         carCanvas.height = window.innerHeight;
+
+         goToPanel.style.left = carCanvas.width / 2 + "px";
+         followBtn.style.left = carCanvas.width - 120 + "px";
+         followBtn.style.top = window.innerHeight - 120 + "px";
+         //manualBtn.style.left = 0 + "px";
+         //manualBtn.style.top = "8px";//window.innerHeight - 120 + "px";
+
+         if (showVerticalButtons) {
+            verticalButtons.style.display = "block";
+            verticalButtonsWidth = 30;
+         }
+
+         if (!useHardCodedBrain) {
+            carString = localStorage.getItem("car");
+            carInfo = carString ? JSON.parse(carString) : null;
+         }
+
+         setInterfaceOptions(carInfo);
+
+         document.addEventListener("keydown", (event) => {
+            if (event.key === "1") {
+               selectCar(0);
+            } else if (event.key === "2") {
+               selectCar(1);
+            } else if (event.key === "3") {
+               selectCar(2);
+            } else if (event.key === "4") {
+               selectCar(3);
+            } else if (event.key === "+") {
+               viewport.zoomIn();
+            } else if (event.key === "*") {
+               viewport.zoomInDoubleMax();
+            } else if (event.key === "-") {
+               viewport.zoomOut();
+            } else if (event.key === "T") {
+               bestCar.x = viewport.mouse.x;
+               bestCar.y = viewport.mouse.y;
+            } else if (event.key === "W" || event.key === "w") {
+               wDown = true;
+            } else if (event.key === "A" || event.key === "a") {
+               aDown = true;
+            }else if (event.key === "S" || event.key === "s") {
+               sDown = true;
+            }else if (event.key === "G" || event.key === "g") {
+               gDown = true;
+            }
+         });
+
+         const nnCanvas = document.createElement("canvas");
+         nnCanvas.height =
+            window.innerHeight -
+            rightBarWidth -
+            (showDecisionBoundary ? 300 : 0);
+         nnCanvas.width = rightBarWidth;
+
+         //changeTarget(goingToSelect);
+
+         /*
+const worldString = localStorage.getItem("world");
+const world = worldString
+   ? World.load(JSON.parse(worldString))
+   : new World(new Graph());
+world.generate(false);
+*/
+
+         const grid = Grid.load(carCanvas, world, world.grid);
+
+         const viewport = new Viewport(
+            carCanvas,
+            2,
+            world.offset,
+            true,
+            true,
+            0
+         );
+         //Visualizer.addEventListeners(decisionBoundaryCanvas);
+
+         const carCtx = carCanvas.getContext("2d");
+
+         const carMarkings = world.markings.filter((m) => m instanceof Start);
+
+         let stopBorders = world.markings
+            .filter((m) => m instanceof Stop)
+            .map((s) => [s.border.p2, s.border.p1]);
+         let yieldCrossingBorders = world.markings
+            .filter((m) => m instanceof Yield)
+            .map((s) => [s.border.p2, s.border.p1])
+            .concat(
+               world.markings
+                  .filter((m) => m instanceof Crossing)
+                  .map((s) => [
+                     [s.borders[0].p1, s.borders[0].p2],
+                     [s.borders[1].p1, s.borders[1].p2],
+                     [s.borders[0].p2, s.borders[0].p1],
+                     [s.borders[1].p2, s.borders[1].p1],
+                  ])
+                  .flat()
+            );
+         // MAKE SURE CHANGE BELOW AS WELL
+         let lightBorders = world.markings
+            .filter(
+               (m) =>
+                  m instanceof Light &&
+                  (m.state == "red" || m.state == "yellow")
+            )
+            .map((s) => [s.border.p1, s.border.p2]);
+
+         const targets = world.markings.filter((m) => m instanceof Target);
+
+         for (let i = 0; i < targets.length; i++) {
+            switch (i) {
+               case 0:
+                  targets[i].name = "Wärtsilä";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelia.png";
+
+                  break;
+               case 1:
+                  targets[i].name = "Solenovo";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/solenovo.png";
+                  break;
+               case 2:
+                  targets[i].name = "Karelics";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelics_2.png";
+                  break;
+               case 3:
+                  targets[i].name = "UEF";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/uef_2.png";
+                  break;
+               case 4:
+                  targets[i].name = "CGI";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/tiedepuisto_2.png";
+                  break;
+               case 5:
+                  targets[i].name = "Arbonaut";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/arbonaut.png";
+                  break;
+               case 6:
+                  targets[i].name = "Tikkarinne";
+                  targets[i].img = new Image();
+                  targets[i].img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelia.png";
+                  break;
+            }
+         }
+
+         const roadBorders = world.roadBorders.map((s) => [s.p1, s.p2]);
+
+         const optimizing = localStorage.getItem("optimizing");
+
+         const N = optimizing ? maxCarCount : carMarkings.length;
+
+         const cars = generateCars(N, carMarkings);
+         if (carInfo) {
+            setInterfaceOptions(carInfo);
+            for (let i = 0; i < cars.length; i++) {
+               //cars[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
+               cars[i].clone(carInfo);
+               cars[i].nn = NN.load(carInfo.nn, nnCanvas.height);
+
+               if (i > 0) {
+                  /*
+         NeuralNetwork.mutate(
+               cars[i].brain,
+               0.2,
+               Visualizer.selectedBiases,
+               Visualizer.selectedWeights
+         );
+         */
+                  cars[i].nn.mutate(mutationSld.value / 100);
+               }
+            }
+         }
+         for (let i = 0; i < cars.length; i += carMarkings.length) {
+            for (
+               let j = 1;
+               j < carMarkings.length && i + j < cars.length;
+               j++
+            ) {
+               cars[i + j].brain = JSON.parse(JSON.stringify(cars[i].brain));
+               cars[i + j].nn = NN.load(JSON.parse(JSON.stringify(cars[i].nn)));
+            }
+         }
+
+         let bestCar = cars[0];
+
+         let nnViewport = null;
+         let nnEditor = null;
+         const decisionBoundaries = [];
+         const networkCtxts = [];
+
+         generateCarInspector(0);
+
+         const traffic = [];
+
+         /*
+const world = World.load(worldInfo);
+const miniMap = new MiniMap(miniMapContainer, world.graph);
+road.borders = world.roadPoly.segments.map((s) => [s.p1, s.p2]);
+
+const index = Math.floor(Math.random() * world.graph.segments.length);
+const startSeg = world.graph.segments[index];
+const startPoint = startSeg.p1;
+const vec = subtract(startSeg.p2, startSeg.p1);
+
+for (const car of cars) {
+   car.x = startPoint.x;
+   car.y = startPoint.y;
+   car.angle = -2;
+}
+
+let ZOOM = 1.5;
+carCanvas.onwheel = (evt) => {
+   const dir = Math.sign(evt.deltaY);
+   const step = 0.05;
+   ZOOM -= dir * step;
+   ZOOM = Math.min(2, Math.max(0.5, ZOOM));
+};
+*/
+         let lastLoop = new Date();
+
+         localStorage.removeItem("optimizing");
+
+         giveAllPaths();
+
+         setTimeout(() => {
+            stage.style.opacity = 1;
+            loading.style.display = "none";
+
+            const today = new Date();
+            const month = today.getMonth();
+            if (month >= 9 && month <= 10) {
+               season = "autumn";
+            }
+            if (month >= 10 || month <= 1) {
+               season = "winter";
+            }
+
+            if (wDown) {
+               season = "winter";
+            } else if (aDown) {
+               season = "autumn";
+            }else if (sDown) {
+               season = "summer";
+            }
+            
+            if (gDown) {
+               showGrid=true;
+            }
+
+            animate();
+         }, 500);
+
+         function setInterfaceOptions(carInfo) {
+            rayCount.value = carInfo.sensorOptions.rayCount;
+            rayLength.value = carInfo.sensorOptions.rayLength;
+            raySpread.value = carInfo.sensorOptions.raySpread;
+            rayOffset.value = carInfo.sensorOptions.rayOffset;
+            output_forward.style.backgroundColor =
+               carInfo.brainOptions.outputs.includes("🠉") ? "white" : "gray";
+            output_left.style.backgroundColor =
+               carInfo.brainOptions.outputs.includes("🠈") ? "white" : "gray";
+            output_right.style.backgroundColor =
+               carInfo.brainOptions.outputs.includes("🠊") ? "white" : "gray";
+            output_reverse.style.backgroundColor =
+               carInfo.brainOptions.outputs.includes("🠋") ? "white" : "gray";
+
+            hiddenOnOff.checked =
+               carInfo.brainOptions.hiddenLayerNodeCounts.length > 0;
+            if (hiddenOnOff.checked) {
+               hiddenCount.value =
+                  carInfo.brainOptions.hiddenLayerNodeCounts.join(",");
+            } else {
+               hiddenCount.value = "3,4";
+            }
+            toggleHidden();
+
+            aiOnOff.checked = carInfo.type == "AI";
+            speedOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("⏱️");
+            stopOnOff.checked = carInfo.brainOptions.extraInputs.includes("🛑");
+            lightOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("🚦");
+            targetsOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("🎯"); //!!! REMEMBER IN CAR
+            crossingOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("🚶");
+            yieldOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("⚠️");
+            parkingOnOff.checked =
+               carInfo.brainOptions.extraInputs.includes("🅿️");
+
+            autoForwardOnOff.checked = carInfo.autoForward;
+
+            localStorage.setItem("defaultOptions", JSON.stringify(carInfo));
+         }
+
+         function openOptionsPanel() {
+            optionsPanel.style.display = "block";
+         }
+
+         function cancelOptions() {
+            optionsPanel.style.display = "none";
+         }
+
+         function toggleHidden() {
+            if (hiddenOnOff.checked) {
+               hiddenCount.disabled = false;
+            } else {
+               hiddenCount.disabled = true;
+            }
+         }
+
+         function toggleOutput(emoji) {
+            switch (emoji) {
+               case "🠉":
+                  output_forward.style.backgroundColor =
+                     output_forward.style.backgroundColor == "white"
+                        ? "gray"
+                        : "white";
+                  break;
+               case "🠈":
+                  output_left.style.backgroundColor =
+                     output_left.style.backgroundColor == "white"
+                        ? "gray"
+                        : "white";
+                  break;
+               case "🠊":
+                  output_right.style.backgroundColor =
+                     output_right.style.backgroundColor == "white"
+                        ? "gray"
+                        : "white";
+                  break;
+               case "🠋":
+                  output_reverse.style.backgroundColor =
+                     output_reverse.style.backgroundColor == "white"
+                        ? "gray"
+                        : "white";
+                  break;
+            }
+         }
+
+         function selectCar(index) {
+            bestCar = cars[index];
+            viewport.flyTo(bestCar, true);
+            bestCar.resetControls();
+            goingToSelect.value = bestCar.destination.name;
+            manual = !bestCar.useBrain;
+            manualBtn.style.backgroundColor = manual ? "blue" : "rgba(0,0,0,0)";
+         }
+
+         function followCar() {
+            //followBestCar=true;
+            viewport.flyTo(bestCar, true);
+         }
+
+         function toggleManual() {
+            manual = !manual;
+            bestCar.useBrain = !manual;
+            bestCar.controls.forward = false;
+            bestCar.controls.left = false;
+            bestCar.controls.right = false;
+            bestCar.controls.reverse = false;
+            if (manual) {
+               goingToSelect.style.pointerEvents = "none";
+               goingToSelect.style.opacity = 0.5;
+               bestCar.resetControls();
+               bestCar.assignedBorders = [];
+               bestCar.shortestPath = [];
+               miniMap.destination = null;
+            } else {
+               changeTarget(goingToSelect);
+               goingToSelect.style.pointerEvents = "";
+               goToPanel.style.opacity = 1;
+            }
+            manualBtn.style.backgroundColor = manual ? "blue" : "rgba(0,0,0,0)";
+         }
+
+         function navToLink() {
+            window.open(linkToVisit, "_blank");
+         }
+      </script>
+   
+
+</body><grammarly-desktop-integration data-grammarly-shadow-root="true"><template shadowrootmode="open"><style>
+      div.grammarly-desktop-integration {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select:none;
+        user-select:none;
+      }
+
+      div.grammarly-desktop-integration:before {
+        content: attr(data-content);
+      }
+    </style><div aria-label="grammarly-integration" role="group" tabindex="-1" class="grammarly-desktop-integration" data-content="{&quot;mode&quot;:&quot;full&quot;,&quot;isActive&quot;:true,&quot;isUserDisabled&quot;:false}"></div></template></grammarly-desktop-integration></html>

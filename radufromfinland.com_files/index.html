@@ -123,12 +123,6 @@
     followBtn.style.left = carCanvas.width - 120 + "px";
     followBtn.style.top = window.innerHeight - 120 + "px";
 
-
-
-    const nnCanvas = document.createElement("canvas");
-    nnCanvas.height = window.innerHeight - rightBarWidth - 300;
-    nnCanvas.width = rightBarWidth;
-
     const grid = Grid.load(carCanvas, world, world.grid);
 
     const viewport = new Viewport(
@@ -160,13 +154,9 @@
                 ])
                 .flat()
         );
-    // MAKE SURE CHANGE BELOW AS WELL
+
     let lightBorders = world.markings
-        .filter(
-            (m) =>
-                m instanceof Light &&
-                (m.state == "red" || m.state == "yellow")
-        )
+        .filter( (m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
         .map((s) => [s.border.p1, s.border.p2]);
 
     const targets = world.markings.filter((m) => m instanceof Target);
@@ -177,9 +167,7 @@
     // TODO: implement a better way to fly to the best car
     // viewport.flyTo(bestCar, true);
 
-    let nnViewport = null;
-    const decisionBoundaries = [];
-    generateCarInspector(0);
+    generateMiniMap(0);
 
     let lastLoop = new Date();
     localStorage.removeItem("optimizing");

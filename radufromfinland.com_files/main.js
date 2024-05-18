@@ -1,32 +1,25 @@
-function generateCarInspector(index) {
+function generateMiniMap(index) {
     const c3Margin = 20;
     const container = document.createElement("div");
-    const c3 = document.createElement("canvas");
-    c3.height = rightBarWidth;
-    c3.width = rightBarWidth;
-    c3.style.borderRadius = "50%";
-    c3.style.border = "2px solid green";
-    c3.style.margin = c3Margin + "px";
-    c3.style.backgroundColor = "#333";
+    const minimapCanvas = document.createElement("canvas");
 
-    miniMap = new MiniMap(c3, world.graph, rightBarWidth - c3Margin * 2);
-    miniMap.targets = targets;
-
-    const d = document.createElement("div");
-    const db = new MultiDecisionBoundary(d, cars[index].nn, outputColors);
-
-    container.appendChild(nnCanvas);
-    container.appendChild(c3);
+    minimapCanvas.height = rightBarWidth;
+    minimapCanvas.width = rightBarWidth;
+    minimapCanvas.style.borderRadius = "50%";
+    minimapCanvas.style.border = "2px solid green";
+    minimapCanvas.style.margin = c3Margin + "px";
+    minimapCanvas.style.backgroundColor = "#333";
 
     container.style.marginRight = "5px";
     container.style.display = "flex";
     container.style.flexDirection = "column";
     container.style.backgroundColor = "#222";
 
-    inspectionSection.appendChild(container);
-    decisionBoundaries.push(db);
+    miniMap = new MiniMap(minimapCanvas, world.graph, rightBarWidth - c3Margin * 2);
+    miniMap.targets = targets;
 
-    nnViewport = new Viewport(nnCanvas, 1, null, false, false);
+    container.appendChild(minimapCanvas);
+    inspectionSection.appendChild(container);
 
 }
 
@@ -123,7 +116,6 @@ function animate(time) {
 
     miniMap.update(viewPoint);
     world.draw(carCtx, viewPoint, false, activeRegion, optimizing);
-    nnViewport.reset();
 
     requestAnimationFrame(animate);
 }

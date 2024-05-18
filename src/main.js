@@ -72,7 +72,7 @@ function animate(time) {
     ]);
 
     miniMap.update(viewPoint);
-    world.draw(carCtx, viewPoint, false, activeRegion, optimizing);
+    world.draw(carCtx, viewPoint, false, activeRegion);
     requestAnimationFrame(animate);
 }
 

@@ -13,7 +13,6 @@ class MiniMap {
         /** @type {Target[]} */
         this.targets = [];
 
-        this.setupWarp();
         this.doWarp = false;
     }
 
@@ -76,60 +75,6 @@ class MiniMap {
         this.ctx.lineWidth = 0.5 / scaler;
         this.ctx.fill();
         this.ctx.restore();
-
-        if (this.doWarp) {
-            this.warp();
-        }
     }
 
-    setupWarp() {
-        if (this.newImgData == null) {
-            this.newImgData = this.ctx.createImageData(
-                this.canvas.width,
-                this.canvas.height
-            );
-
-            this.offset = {
-                x: this.canvas.width / 2,
-                y: this.canvas.height / 2,
-            };
-
-            this.diag = Math.hypot(this.canvas.width, this.canvas.height) / 6;
-            this.newIs = [];
-
-            for (let i = 0; i < this.newImgData.data.length; i += 4) {
-                const pIndex = i / 4;
-                const x = (pIndex % this.canvas.width) - this.offset.x;
-                const y = Math.floor(pIndex / this.canvas.width) - this.offset.y;
-                const mag = Math.hypot(x, y);
-                const dir = Math.atan2(y, x);
-                const newMag = this.diag * Math.tan((0.5 * mag) / this.diag);
-                const newXY = {
-                    x: Math.round(Math.cos(dir) * newMag + this.offset.x),
-                    y: Math.round(Math.sin(dir) * newMag + this.offset.y),
-                };
-                const newI = (newXY.y * this.newImgData.width + newXY.x) * 4;
-                this.newIs[pIndex] = newI;
-            }
-        }
-    }
-
-    warp() {
-        const {ctx, canvas, newImgData} = this;
-
-        const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-        for (let i = 0; i < newImgData.data.length; i += 4) {
-            const pIndex = i / 4;
-            const newI = this.newIs[pIndex];
-
-            if (newI < imgData.data.length) {
-                newImgData.data[i + 0] = imgData.data[newI + 0];
-                newImgData.data[i + 1] = imgData.data[newI + 1];
-                newImgData.data[i + 2] = imgData.data[newI + 2];
-                newImgData.data[i + 3] = imgData.data[newI + 3] > 0 ? 70 : 0;
-            }
-        }
-        ctx.putImageData(newImgData, 0, 0);
-    }
 }

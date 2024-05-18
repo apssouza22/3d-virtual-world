@@ -34,7 +34,6 @@ class Grid {
 
    static load(canvas, world, info) {
       const grid = new Grid();
-
       grid.left = info.left;
       grid.right = info.right;
       grid.top = info.top;

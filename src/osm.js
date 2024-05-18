@@ -194,7 +194,8 @@ out skel qt;
 out body;
 >;
 out skel qt;
-*/ parseLights: (data, minLat, maxLat, minLon, maxLon) => {
+*/
+   parseLights: (data, minLat, maxLat, minLon, maxLon) => {
       const nodes = data.elements.filter((n) => n.type == "node");
 
       const deltaLat = maxLat - minLat;

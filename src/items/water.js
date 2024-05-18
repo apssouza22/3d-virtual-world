@@ -10,24 +10,23 @@ class Water extends WorldItem {
         return water;
     }
 
-    constructor(polys, osm_obj) {
+    constructor(polys) {
         super();
 
         // SKIP! 1065353689
         let polyPoints = [];
         for (const poly of polys) {
+            polyPoints = polyPoints.concat(poly.points);
             if (poly.id == 23842938 || poly.id == 1065353686) {
-                polyPoints = polyPoints.concat(poly.points);
             }
             if (poly.id == 650261846) {
                 polyPoints = polyPoints.concat(poly.points.reverse());
             }
         }
 
-        this.polys = [
-            new Polygon(polyPoints),
-            polys.filter((p) => p.id == 23767974)[0],
-        ];
+        this.polys = polys
+        this.innerPolys = polys
+        return
 
         const innerPolyIDs = [
             23768192, 23768066, 5114043, 23767896, 941885044, 938810226, 941885043,

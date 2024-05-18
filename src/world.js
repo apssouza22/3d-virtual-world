@@ -15,28 +15,24 @@ class World {
         this.buildingMinLength = buildingMinLength;
         this.spacing = spacing;
         this.treeSize = treeSize;
-        /** @type {Envelope[]} */
-        this.envelopes = [];
-        this.roadBorders = [];
-        /** @type {Building[]} */
-        this.buildings = [];
-
-        this.trees = [];
-        this.laneGuides = [];
-
-        /** @type {Marking[]} */
-        this.markings = [];
-
-        /** @type {Car[]} */
-        this.cars = [];
-
-        this.bestCar = null;
-
         this.frameCount = 100;
 
         this.drawContents = ["envelopes", "items", "3d", "markings"];
-
-        // NEW //!!
+        /** @type {Envelope[]} */
+        this.envelopes = [];
+        /** @type {Segment[]} */
+        this.roadBorders = [];
+        /** @type {Building[]} */
+        this.buildings = [];
+        /** @type {Tree[]} */
+        this.trees = [];
+        /** @type {Segment[]} */
+        this.laneGuides = [];
+        /** @type {Marking[]} */
+        this.markings = [];
+        /** @type {Car[]} */
+        this.cars = [];
+        /** @type {Water} */
         this.water = null;
 
         this.generate();
@@ -53,15 +49,14 @@ class World {
         world.treeSize = info.treeSize;
         world.envelopes = info.envelopes.map((e) => Envelope.load(e));
         if (info.roadBorders) {
-            world.roadBorders = info.roadBorders.map(
-                (b) =>
-                    new Segment(
+            world.roadBorders = info.roadBorders
+                .map((b) => new Segment(
                         new Point(b.p1.x, b.p1.y),
                         new Point(b.p2.x, b.p2.y),
                         b.oneWay,
                         b.layer
                     )
-            );
+                );
         } else {
             world.roadBorders = info.roadPoly.segments.map((b) => new Segment(
                     new Point(b.p1.x, b.p1.y),
@@ -71,8 +66,11 @@ class World {
         }
         world.buildings = info.buildings.map((e, index) => Building.load(e, index));
         world.trees = info.trees.map((t) => new Tree(t.center, info.treeSize));
-        world.laneGuides = info.laneGuides.map((b) => new Segment(new Point(b.p1.x, b.p1.y), new Point(b.p2.x, b.p2.y))
-        );
+        world.laneGuides = info.laneGuides
+            .map((b) => new Segment(
+                new Point(b.p1.x, b.p1.y),
+                new Point(b.p2.x, b.p2.y)
+            ));
         world.markings = info.markings.map((m) => Marking.load(m));
         try {
             world.water = Water.load(info.water);
@@ -104,14 +102,10 @@ class World {
             seg.layer = 1;
         }
         this.roadBorders = [...layer0, ...layer1];
-
         this.buildings = this.#generateBuildings();
-
         this.trees = this.#generateTrees();
-
         this.laneGuides.length = 0;
         this.laneGuides.push(...this.#generateLaneGuides());
-
         this.intersections = null;
     }
 
@@ -337,6 +331,9 @@ class World {
         const allBases = [];
         const treeBases = [];
         for (const b of buildings) {
+            if (!b) {
+                continue;
+            }
             const {ceiling, sides, roofPolys} = b.update(viewPoint);
             allSides.push(...sides);
             allBases.push(b.base);
@@ -524,6 +521,9 @@ class World {
 
             if (this.drawContents.includes("envelopes")) {
                 for (const seg of this.graph.segments.filter((e) => e.layer == 1)) {
+                    if (!seg) {
+                        continue
+                    }
                     seg.draw(ctx, {
                         color: "#BBB",
                         width: this.roadWidth + 15,
@@ -531,10 +531,16 @@ class World {
                 }
 
                 for (const seg of this.graph.segments.filter((b) => b.layer == 1)) {
+                    if (!seg) {
+                        continue
+                    }
                     seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
                 }
 
                 for (const seg of this.roadBorders.filter((b) => b.layer == 1)) {
+                    if (!seg) {
+                        continue
+                    }
                     seg.draw(ctx, {color: "white", width: 4});
                 }
             }
@@ -556,9 +562,10 @@ class World {
 
             if (this.drawContents.includes("markings")) {
                 for (const marking of data.markings) {
-                    if (
-                        !(marking instanceof Start || marking instanceof Target) ||
-                        showStartMarkings
+                    if (!marking) {
+                        continue
+                    }
+                    if (!(marking instanceof Start || marking instanceof Target) || showStartMarkings
                     ) {
                         marking.draw(ctx);
                     }
@@ -567,9 +574,15 @@ class World {
 
             if (this.drawContents.includes("envelopes")) {
                 for (const seg of data.graphSegments) {
+                    if (!seg) {
+                        continue
+                    }
                     seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
                 }
                 for (const seg of data.roadBorders) {
+                    if (!seg) {
+                        continue
+                    }
                     seg.draw(ctx, {color: "white", width: 4});
                 }
             }
@@ -580,16 +593,16 @@ class World {
             }
 
             if (this.drawContents.includes("envelopes")) {
-                for (const seg of data.graphSegments.filter((e) => e.layer == 1)) {
+                for (const seg of data.graphSegments.filter((e) => e && e.layer == 1)) {
                     seg.draw(ctx, {
                         color: "#BBB",
                         width: this.roadWidth + 15,
                     });
                 }
-                for (const seg of data.graphSegments.filter((e) => e.layer == 1)) {
+                for (const seg of data.graphSegments.filter((e) => e && e.layer == 1)) {
                     seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
                 }
-                for (const seg of data.roadBorders.filter((e) => e.layer == 1)) {
+                for (const seg of data.roadBorders.filter((e) => e && e.layer == 1)) {
                     seg.draw(ctx, {color: "white", width: 4});
                 }
             }

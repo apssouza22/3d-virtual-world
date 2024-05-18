@@ -1,152 +1,145 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>Self-driving car - No libraries</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body data-new-gr-c-s-check-loaded="14.1173.0" data-gr-ext-installed="">
-<div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px;">
-    🚙🚙🚙🚙🚙 LOADING
-    <span style="transform: scale(-1, 1); display: inline-block">🚙🚙🚙🚙🚙</span>
-</div>
-
-<div id="stage">
-    <canvas id="carCanvas" width="1088" height="1010"></canvas>
-    <div id="inspectionSection"></div>
-    <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
-        🧿
-    </button>
-    <div style="
-               position: absolute;
-               background-color: rgba(255, 255, 255, 0.5);
-               font-size: 12px;
-               bottom: 0px;
-               left: 0px;
-               font-family: Arial;
-            ">
-        Using data from
-        <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title>Self-driving car - No libraries</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body data-new-gr-c-s-check-loaded="14.1173.0" data-gr-ext-installed="">
+    <div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px;">
+        🚙🚙🚙🚙🚙 LOADING
+        <span style="transform: scale(-1, 1); display: inline-block">🚙🚙🚙🚙🚙</span>
     </div>
-</div>
-<script src="src/world.js"></script>
-<script src="src/grid.js"></script>
-<script src="src/viewport.js"></script>
-<script src="src/markings/marking.js"></script>
-<script src="src/markings/stop.js"></script>
-<script src="src/markings/start.js"></script>
-<script src="src/markings/crossing.js"></script>
-<script src="src/markings/parking.js"></script>
-<script src="src/markings/light.js"></script>
-<script src="src/markings/target.js"></script>
-<script src="src/markings/yield.js"></script>
-<script src="src/items/worlditem.js"></script>
-<script src="src/items/tree.js"></script>
-<script src="src/items/building.js"></script>
-<script src="src/items/water.js"></script>
-<script src="src/items/road.js"></script>
-<script src="src/items/car.js"></script>
-<script src="src/utils.js"></script>
-<script src="src/graph.js"></script>
-<script src="src/osm.js"></script>
-<script src="src/point.js"></script>
-<script src="src/segment.js"></script>
-<script src="src/polygon.js"></script>
-<script src="src/envelope.js"></script>
-<script src="src/many_targets_small.js"></script>
-<script src="src/miniMap.js"></script>
 
-<script src="src/main.js"></script>
+    <div id="stage">
+        <canvas id="carCanvas" width="1088" height="1010"></canvas>
+        <div id="inspectionSection"></div>
+        <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
+            🧿
+        </button>
+        <div style="
+                   position: absolute;
+                   background-color: rgba(255, 255, 255, 0.5);
+                   font-size: 12px;
+                   bottom: 0px;
+                   left: 0px;
+                   font-family: Arial;
+                ">
+            Using data from
+            <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a>
+        </div>
+    </div>
+    <script src="src/world.js"></script>
+    <script src="src/grid.js"></script>
+    <script src="src/viewport.js"></script>
+    <script src="src/markings/marking.js"></script>
+    <script src="src/markings/stop.js"></script>
+    <script src="src/markings/start.js"></script>
+    <script src="src/markings/crossing.js"></script>
+    <script src="src/markings/parking.js"></script>
+    <script src="src/markings/light.js"></script>
+    <script src="src/markings/target.js"></script>
+    <script src="src/markings/yield.js"></script>
+    <script src="src/items/worlditem.js"></script>
+    <script src="src/items/tree.js"></script>
+    <script src="src/items/building.js"></script>
+    <script src="src/items/water.js"></script>
+    <script src="src/items/road.js"></script>
+    <script src="src/items/car.js"></script>
+    <script src="src/utils.js"></script>
+    <script src="src/graph.js"></script>
+    <script src="src/osm.js"></script>
+    <script src="src/point.js"></script>
+    <script src="src/segment.js"></script>
+    <script src="src/polygon.js"></script>
+    <script src="src/envelope.js"></script>
+    <script src="src/miniMap.js"></script>
+    <script src="src/main.js"></script>
+    <script src="src/data/many_targets_small.js"></script>
+    <script src="src/data/dublin-water.js"></script>
+    <script src="src/data/dublin-buildings.js"></script>
 
-<script>
-    /** @type {World} */
-    const world = World.load(worldData);
+    <script>
+        // const roads = Osm.parseRoads(openMapData);
+        const buildings = Osm.parseBuildings(dublinBuildings);
+        const waters = Osm.parseWaters(dublinWater);
 
-    loading.style.opacity = 0;
-    let followBestCar = true;
-    let manual = false;
-    let showGrid = false;
-    let verticalButtonsWidth = 0;
-    const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
+        console.log("buildings", buildings);
+        console.log("waters", waters);
+        console.log("world", worldData);
+        worldData.water = waters;
 
-    const defaultOptions = localStorage.getItem("defaultOptions")
-        ? JSON.parse(localStorage.getItem("defaultOptions"))
-        : {
-            type: "AI", // "KEYS" "DUMMY"
-            width: 30,
-            height: 50, //height: 90,
-            maxSpeed: 3,
-            color: "blue", //color:"orange",
-            acceleration: 0.2,
-            friction: 0.1,
-            autoForward: true,
-            sensorOptions: {
-                rayCount: 2,
-                rayLength: 250,
-                raySpread: 0.6, //Math.PI / 2, // Math.PI / 2,
-                rayOffset: 0, //-Math.PI/2//0//-Math.PI/4//, rayOffset: 0,
-            },
-            brainOptions: {
-                extraInputs: [], //"s"], //"s"], //["s"], //"s"],
-                hiddenLayerNodeCounts: [],
-                outputs: ["🠉", "🠈", "🠊", "🠋"],
-            },
-        };
-    const rightBarWidth = 500;
-    const carCanvas = document.getElementById("carCanvas");
-    carCanvas.width = window.innerWidth - rightBarWidth - verticalButtonsWidth;
-    carCanvas.height = window.innerHeight;
+        // worldData.offset = { x: -4356, y: -7382 };
+        // worldData.water = waters;
+        // worldData.markings = [];
 
-    followBtn.style.left = carCanvas.width - 120 + "px";
-    followBtn.style.top = window.innerHeight - 120 + "px";
+        const world = World.load(worldData);
+        // const world = createAndSaveWorld();
 
-    const grid = Grid.load(carCanvas, world, world.grid);
+        loading.style.opacity = 0;
+        let followBestCar = true;
+        let showGrid = false;
+        let verticalButtonsWidth = 0;
+        const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
 
-    const viewport = new Viewport(
-        carCanvas,
-        2,
-        world.offset,
-        true,
-        true,
-        0
-    );
-    const carCtx = carCanvas.getContext("2d");
-    const carMarkings = world.markings.filter((m) => m instanceof Start);
+        const defaultOptions = {};
+        const rightBarWidth = 500;
+        const carCanvas = document.getElementById("carCanvas");
+        carCanvas.width = window.innerWidth - rightBarWidth - verticalButtonsWidth;
+        carCanvas.height = window.innerHeight;
 
-    let lightBorders = world.markings
-        .filter((m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
-        .map((s) => [s.border.p1, s.border.p2]);
+        followBtn.style.left = carCanvas.width - 120 + "px";
+        followBtn.style.top = window.innerHeight - 120 + "px";
 
-    const targets = world.markings.filter((m) => m instanceof Target);
-    const optimizing = localStorage.getItem("optimizing");
-    const N = optimizing ? maxCarCount : carMarkings.length;
-    /**
-     * @type {Car[]}
-     */
-    const cars = generateCars(N, carMarkings);
-    world.cars = cars;
-    // TODO: implement a better way to fly to the best car
-    // viewport.flyTo(cars[0], true);
+        const grid = Grid.load(carCanvas, world, world.grid);
 
-    generateMiniMap(world);
+        const viewport = new Viewport(carCanvas, 2, world.offset, true, true, 0);
+        const carCtx = carCanvas.getContext("2d");
+        const carMarkings = world.markings.filter((m) => m instanceof Start);
 
-    let lastLoop = new Date();
-    localStorage.removeItem("optimizing");
+        let lightBorders = world.markings
+            .filter((m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
+            .map((s) => [s.border.p1, s.border.p2]);
 
-    setTimeout(() => {
-        stage.style.opacity = 1;
-        loading.style.display = "none";
-        animate();
-    }, 500);
+        const targets = world.markings.filter((m) => m instanceof Target);
+
+        /** @type {Car[]}  */
+        const cars = generateCars(carMarkings.length, carMarkings);
+        world.cars = cars;
+        // TODO: implement a better way to fly to the best car
+        // viewport.flyTo(cars[0], true);
+
+        generateMiniMap(world);
+        let lastLoop = new Date();
+
+        setTimeout(() => {
+            stage.style.opacity = 1;
+            loading.style.display = "none";
+            animate();
+        }, 500);
 
 
-    function followCar() {
-        //followBestCar=true;
-        // viewport.flyTo(bestCar, true);
-    }
+        function followCar() {
+            //followBestCar=true;
+            // viewport.flyTo(bestCar, true);
+        }
+        function createAndSaveWorld() {
+            console.log("saving world data");
+            /** @type {World} */
+            const world = new World(roads);
+            const element = document.createElement("a");
+            element.setAttribute(
+                "href",
+                "data:application/json;charset=utf-8," +
+                encodeURIComponent(JSON.stringify(world))
+            );
 
-</script>
+            const fileName = "dublin.world.js";
+            element.setAttribute("download", fileName);
 
-
+            element.click();
+            return world;
+        }
+    </script>
 </body>
 </html>

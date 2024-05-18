@@ -13,9 +13,7 @@ function generateCarInspector(index) {
     miniMap.targets = targets;
 
     const d = document.createElement("div");
-    const db = multiDecisionBoundary
-        ? new MultiDecisionBoundary(d, cars[index].nn, outputColors)
-        : new DecisionBoundary(d, cars[index].nn);
+    const db = new MultiDecisionBoundary(d, cars[index].nn, outputColors);
 
     container.appendChild(nnCanvas);
     container.appendChild(c3);
@@ -30,10 +28,7 @@ function generateCarInspector(index) {
     Visualizer.decisionBoundary = db;
 
     nnViewport = new Viewport(nnCanvas, 1, null, false, false);
-    nnEditor = new NNEditor(nnViewport, bestCar.nn);
-    if (showVerticalButtons) {
-        nnEditor.enable();
-    }
+
 }
 
 function save() {
@@ -75,8 +70,7 @@ function generateCars(N, markings) {
     while (i < N) {
         const { center, directionVector, width, height } = markings[i % markings.length];
         const alpha = -angle(directionVector);
-        cars.push(
-            new Car(center.x, center.y, alpha, {
+        cars.push(new Car(center.x, center.y, alpha, {
                 ...defaultOptions, //,
                 //maxSpeed,
                 color: carColors[i % carColors.length],
@@ -284,16 +278,7 @@ function animate(time) {
     miniMap.update(viewPoint);
     world.draw(carCtx, viewPoint, false, activeRegion, optimizing);
     nnViewport.reset();
-    nnEditor.graph = bestCar.nn;
-    nnEditor.display();
 
-    if (showDecisionBoundary) {
-        decisionBoundaries[0].updateBrain(bestCar.nn);
-    }
-
-    if (showDecisionBoundary) {
-        decisionBoundaries[0].draw(cars.map((c) => c.nn.inputNodes));
-    }
     requestAnimationFrame(animate);
 }
 
@@ -488,78 +473,6 @@ function updateMutation() {
 function changeTarget(el) {
     miniMap.img = new Image();
     const theCars = optimizing ? cars : [bestCar];
-    switch (el.value) {
-        case "Wärtsilä":
-            target = world.markings.filter((m) => m instanceof Target)[0];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelia.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["Karelia"];
-            break;
-        case "Solenovo":
-            target = world.markings.filter((m) => m instanceof Target)[1];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/solenovo.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["Solenovo"];
-            break;
-        case "Karelics":
-            target = world.markings.filter((m) => m instanceof Target)[2];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelics_2.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["Karelics"];
-            break;
-        case "UEF":
-            target = world.markings.filter((m) => m instanceof Target)[3];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/uef_2.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["UEF"];
-            break;
-            case "CGI":
-                target = world.markings.filter((m) => m instanceof Target)[4];
-                assignPath(theCars, target);
-                miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/cgi.png";
-                miniMap.destination = target.center;
-                linkToVisit = links["CGI"];
-                break;
-                case "Siili":
-                    target = world.markings.filter((m) => m instanceof Target)[4];
-                    assignPath(theCars, target);
-                    miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/siili_2.png";
-                    miniMap.destination = target.center;
-                    linkToVisit = links["Siili"];
-                    break;
-                    case "Blancco":
-                        target = world.markings.filter((m) => m instanceof Target)[4];
-                        assignPath(theCars, target);
-                        miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/blancco.png";
-                        miniMap.destination = target.center;
-                        linkToVisit = links["Blancco"];
-                        break;
-                        case "Nolwenture":
-                            target = world.markings.filter((m) => m instanceof Target)[4];
-                            assignPath(theCars, target);
-                            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/nolwenture.png";
-                            miniMap.destination = target.center;
-                            linkToVisit = links["Nolwenture"];
-                            break;
-        case "Arbonaut":
-            target = world.markings.filter((m) => m instanceof Target)[5];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/arbonaut.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["Arbonaut"];
-            break;
-        case "Tikkarinne":
-            target = world.markings.filter((m) => m instanceof Target)[6];
-            assignPath(theCars, target);
-            miniMap.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/karelia.png";
-            miniMap.destination = target.center;
-            linkToVisit = links["Karelia"];
-            break;
-    }
     goingToImg.src = miniMap.img.src;
 }
 

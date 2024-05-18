@@ -68,7 +68,7 @@ function generateCars(N, markings) {
     const cars = [];
     let i = 0;
     while (i < N) {
-        const { center, directionVector, width, height } = markings[i % markings.length];
+        const {center, directionVector, width, height} = markings[i % markings.length];
         const alpha = -angle(directionVector);
         cars.push(new Car(center.x, center.y, alpha, {
                 ...defaultOptions, //,
@@ -82,10 +82,7 @@ function generateCars(N, markings) {
 }
 
 function animate(time) {
-    const thisLoop = new Date();
-    const fps = 1000 / (thisLoop - lastLoop);
-    lastLoop = thisLoop;
-    const realCarSpeed = (fps * 60 * bestCar.speed * 10) / 1000;
+    lastLoop = new Date();
 
     if (followBestCar) {
         if (followBestCar instanceof Car) {
@@ -96,17 +93,11 @@ function animate(time) {
     }
     viewport.reset();
 
-    // MAKE SURE CHANGE ABOVE AS WELL
     lightBorders = world.markings
-        .filter(
-            (m) =>
-                m instanceof Light && (m.state == "red" || m.state == "yellow")
-        )
+        .filter((m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
         .map((s) => [s.border.p1, s.border.p2]);
 
     for (let i = 0; i < cars.length; i++) {
-        //cars[i].update(road.borders, traffic);
-
         let minDist = Number.MAX_SAFE_INTEGER;
         let nearest = null;
         for (const t of targets) {
@@ -140,21 +131,17 @@ function animate(time) {
         const _borders = world
             .getNearbyRoadBorders(cars[i]) //world.roadBorders
             .filter((b) => b.layer == cars[i].layer)
-            //find connections of different levels. if nearby to connection, consider both //!!!!!!!!!!!!!!!!
-
-            //.filter((b) => b.connectedTo(cars[i].segment))
-            //.filter((b) => b.layer == cars[i].layer || b.connectedTo(cars[i].segment))
             .map((s) => [s.p1, s.p2]);
 
-         if(cars[i].state=="boat"){
-            cars[i].layer=null;
-            _borders.length=0;
-         }
+        if (cars[i].state == "boat") {
+            cars[i].layer = null;
+            _borders.length = 0;
+        }
         _borders.push(
             ...world.getNearbyItemBorders(cars[i]).map((s) => [s.p1, s.p2])
         );
 
-        cars[i].onRoad=world.isOnRoad(cars[i]);
+        cars[i].onRoad = world.isOnRoad(cars[i]);
 
         const carBorders = [];
         if (!optimizing) {
@@ -202,7 +189,7 @@ function animate(time) {
     if (!optimizing) {
         for (let i = 0; i < cars.length - 1; i++) {
             for (let j = i + 1; j < cars.length; j++) {
-                if (!cars[i].invulnerable && !cars[j].invulnerable && cars[i].state!="helicopter" && cars[j].state!="helicopter") {
+                if (!cars[i].invulnerable && !cars[j].invulnerable && cars[i].state != "helicopter" && cars[j].state != "helicopter") {
                     if (polysIntersect(cars[i].polygon, cars[j].polygon)) {
                         cars[i].damaged = true;
                         cars[j].damaged = true;
@@ -253,7 +240,7 @@ function animate(time) {
     world.cars = cars;
     world.bestCar = bestCar;
     const viewPoint = scale(viewport.getOffset(), -1);
-    const regScaler = showGrid?1:2;
+    const regScaler = showGrid ? 1 : 2;
     const regionWidth = carCanvas.width * regScaler;
     const regionHeight = carCanvas.height * regScaler;
     const activeRegion = new Polygon([
@@ -399,11 +386,11 @@ function updateOptions() {
     if (
         updateBrain ||
         JSON.stringify(newOutputs) !=
-            JSON.stringify(bestCar.brainOptions.outputs) ||
+        JSON.stringify(bestCar.brainOptions.outputs) ||
         JSON.stringify(newHiddenLayerNodeCounts) !=
-            JSON.stringify(bestCar.brainOptions.hiddenLayerNodeCounts) ||
+        JSON.stringify(bestCar.brainOptions.hiddenLayerNodeCounts) ||
         JSON.stringify(newExtraInputs) !=
-            JSON.stringify(bestCar.brainOptions.extraInputs)
+        JSON.stringify(bestCar.brainOptions.extraInputs)
     ) {
         bestCar.brainOptions.hiddenLayerNodeCounts = newHiddenLayerNodeCounts;
         bestCar.brainOptions.outputs = newOutputs;
@@ -478,7 +465,7 @@ function changeTarget(el) {
 
 function assignPath(cars, target) {
     for (const car of cars) {
-        if(car.state=="car" || car.onRoad){
+        if (car.state == "car" || car.onRoad) {
             car.segment = getNearestSegment(car, world.graph.segments);
             car.destination = target;
             const segments = world.generateShortestPathBorders(car, target.center);
@@ -508,7 +495,7 @@ function giveAllPaths() {
                 targetIndex = 6;
                 break;
         }
-        cars[i].polygon=cars[i].createPolygon();
+        cars[i].polygon = cars[i].createPolygon();
         cars[i].segment = getNearestSegment(cars[i], world.graph.segments);
         cars[i].assignedBorders = world.generateShortestPathBorders(
             cars[i],
@@ -518,40 +505,40 @@ function giveAllPaths() {
     }
 }
 
-function handleEasterEggs(car){
-   if(car.state=="helicopter"){
-      return;
-   }
-   const carPoly=new Polygon(car.polygon)
-   let insideWater=false;
-   for(const p of world.water.polys){
-      if(p.containsPoly(carPoly)){
-         insideWater=true;
-      }
-   }
-   for(const p of world.water.innerPolys){
-      if(p.containsPoly(carPoly)){
-         insideWater=false;
-      }
-   }
-   if(insideWater){
-      if(car.borderDamaged){
-         if(car.state=="car"){
-            car.state="helicopter";
-            car.maxSpeed=10;
-            car.increaseSize();
-            return;
-         }
-      }
-      if(!car.onRoad){
-         if(car.state=="car"){
-            car.state="boat";
-         }
-      }
-   }else{
-      if(car.state=="boat"){
-         car.state="car";
-      }
-   }
+function handleEasterEggs(car) {
+    if (car.state == "helicopter") {
+        return;
+    }
+    const carPoly = new Polygon(car.polygon)
+    let insideWater = false;
+    for (const p of world.water.polys) {
+        if (p.containsPoly(carPoly)) {
+            insideWater = true;
+        }
+    }
+    for (const p of world.water.innerPolys) {
+        if (p.containsPoly(carPoly)) {
+            insideWater = false;
+        }
+    }
+    if (insideWater) {
+        if (car.borderDamaged) {
+            if (car.state == "car") {
+                car.state = "helicopter";
+                car.maxSpeed = 10;
+                car.increaseSize();
+                return;
+            }
+        }
+        if (!car.onRoad) {
+            if (car.state == "car") {
+                car.state = "boat";
+            }
+        }
+    } else {
+        if (car.state == "boat") {
+            car.state = "car";
+        }
+    }
 
 }

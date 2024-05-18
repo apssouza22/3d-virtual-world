@@ -40,12 +40,6 @@ class Water {
 
    draw(ctx) {
       let color="#0096FF";
-      if (season == "autumn") {
-         color="#0078DD";
-      }
-      if (season == "winter") {
-         color="#00BCFF";
-      }
 
       for (const poly of this.polys) {
          poly.draw(ctx, { fill: color, stroke: "rgba(0,0,0,0)" });

@@ -28,16 +28,6 @@ class Tree {
          let color = "rgb(30," + lrp + ",70)";
 
          let size = lerp(this.size, 40, t);
-         if(season == "winter" && level>levelCount-6){
-            lrp=lerp(150, 255, t)
-            color = "rgb("+lrp+"," + lrp + ","+lrp+")";
-         }
-         if(season=="autumn"){
-            lrp=lerp(20, 110, t)
-            let lrp2=lerp(30, 150, t)
-            color = "rgb("+lrp2+"," + lrp + ",0)";
-            size = lerp(40, this.size*1.5, Math.sin(t*Math.PI)**2);
-         }
          const poly = this.#generateLevel(point, size);
          poly.draw(ctx, { fill: color, stroke: "rgba(0,0,0,0)" });
       }

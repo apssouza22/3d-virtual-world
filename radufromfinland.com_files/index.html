@@ -155,41 +155,11 @@
     const stopForFittness = true;
     let showGrid = false;
     let verticalButtonsWidth = 0;
-
-    let season = "summer";
-    let wDown = false;
-    let aDown = false;
-    let sDown = false;
     let gDown = false;
     let linkToVisit = "https://www.karelia.fi/en/information-and-communication-technology";
-
     const outputColors = ["green", "blue", "red", "#888"];
-    const images = generateImages([
-        "🠉",
-        "🠈",
-        "🠊",
-        "🠋",
-        "⬉",
-        "⬆",
-        "⬈",
-        "⏱️",
-        "🛑",
-        "🚦",
-        "🎯",
-        "🚶",
-        "⚠️",
-        "🅿️",
-    ]);
-
-    const carColors = [
-        "#06F",
-        "#F44",
-        "#0B0",
-        "#EB0",
-        "magenta",
-        "cyan",
-        "black",
-    ];
+    const images = generateImages(["🠉", "🠈", "🠊", "🠋", "⬉", "⬆", "⬈", "⏱️", "🛑", "🚦", "🎯", "🚶", "⚠️", "🅿️"]);
+    const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
 
     const defaultOptions = localStorage.getItem("defaultOptions")
         ? JSON.parse(localStorage.getItem("defaultOptions"))
@@ -223,35 +193,6 @@
     followBtn.style.top = window.innerHeight - 120 + "px";
 
     setInterfaceOptions(carInfo);
-
-    document.addEventListener("keydown", (event) => {
-        if (event.key === "1") {
-            selectCar(0);
-        } else if (event.key === "2") {
-            selectCar(1);
-        } else if (event.key === "3") {
-            selectCar(2);
-        } else if (event.key === "4") {
-            selectCar(3);
-        } else if (event.key === "+") {
-            viewport.zoomIn();
-        } else if (event.key === "*") {
-            viewport.zoomInDoubleMax();
-        } else if (event.key === "-") {
-            viewport.zoomOut();
-        } else if (event.key === "T") {
-            bestCar.x = viewport.mouse.x;
-            bestCar.y = viewport.mouse.y;
-        } else if (event.key === "W" || event.key === "w") {
-            wDown = true;
-        } else if (event.key === "A" || event.key === "a") {
-            aDown = true;
-        } else if (event.key === "S" || event.key === "s") {
-            sDown = true;
-        } else if (event.key === "G" || event.key === "g") {
-            gDown = true;
-        }
-    });
 
     const nnCanvas = document.createElement("canvas");
     nnCanvas.height = window.innerHeight - rightBarWidth - 300;
@@ -326,6 +267,7 @@
     }
 
     let bestCar = cars[0];
+    viewport.flyTo(bestCar, true);
     let nnViewport = null;
     const decisionBoundaries = [];
     generateCarInspector(0);
@@ -339,27 +281,9 @@
         stage.style.opacity = 1;
         loading.style.display = "none";
 
-        const today = new Date();
-        const month = today.getMonth();
-        if (month >= 9 && month <= 10) {
-            season = "autumn";
-        }
-        if (month >= 10 || month <= 1) {
-            season = "winter";
-        }
-
-        if (wDown) {
-            season = "winter";
-        } else if (aDown) {
-            season = "autumn";
-        } else if (sDown) {
-            season = "summer";
-        }
-
         if (gDown) {
             showGrid = true;
         }
-
         animate();
     }, 500);
 

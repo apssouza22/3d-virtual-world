@@ -1,4 +1,4 @@
-function generateMiniMap(index) {
+function generateMiniMap(world) {
     const c3Margin = 20;
     const container = document.createElement("div");
     const minimapCanvas = document.createElement("canvas");

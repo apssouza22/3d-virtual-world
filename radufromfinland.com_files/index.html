@@ -6,21 +6,17 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body data-new-gr-c-s-check-loaded="14.1173.0" data-gr-ext-installed="">
-<div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); opacity: 0; transition: all 0.5s ease 0s; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px; display: none;">
+<div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px;">
     🚙🚙🚙🚙🚙 LOADING
     <span style="transform: scale(-1, 1); display: inline-block">🚙🚙🚙🚙🚙</span>
 </div>
 
-<div id="stage" style="opacity: 1;">
+<div id="stage">
     <canvas id="carCanvas" width="1088" height="1010"></canvas>
-
-    <div id="inspectionSection">
-    </div>
-
+    <div id="inspectionSection"></div>
     <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
         🧿
     </button>
-
     <div style="
                position: absolute;
                background-color: rgba(255, 255, 255, 0.5);
@@ -86,8 +82,6 @@
     const stopForFittness = true;
     let showGrid = false;
     let verticalButtonsWidth = 0;
-    let gDown = false;
-    let linkToVisit = "https://www.karelia.fi/en/information-and-communication-technology";
     const outputColors = ["green", "blue", "red", "#888"];
     const images = generateImages(["🠉", "🠈", "🠊", "🠋", "⬉", "⬆", "⬈", "⏱️", "🛑", "🚦", "🎯", "🚶", "⚠️", "🅿️"]);
     const carColors = ["#06F", "#F44", "#0B0", "#EB0", "magenta", "cyan", "black"];
@@ -167,7 +161,7 @@
     // TODO: implement a better way to fly to the best car
     // viewport.flyTo(bestCar, true);
 
-    generateMiniMap(0);
+    generateMiniMap(world);
 
     let lastLoop = new Date();
     localStorage.removeItem("optimizing");
@@ -177,10 +171,6 @@
     setTimeout(() => {
         stage.style.opacity = 1;
         loading.style.display = "none";
-
-        if (gDown) {
-            showGrid = true;
-        }
         animate();
     }, 500);
 

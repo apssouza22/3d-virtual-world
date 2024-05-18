@@ -69,14 +69,13 @@ class World {
                     )
             );
         } else {
-            world.roadBorders = info.roadPoly.segments.map(
-                (b) =>
-                    new Segment(new Point(b.p1.x, b.p1.y), new Point(b.p2.x, b.p2.y))
+            world.roadBorders = info.roadPoly.segments.map((b) => new Segment(
+                    new Point(b.p1.x, b.p1.y),
+                    new Point(b.p2.x, b.p2.y)
+                )
             );
         }
-        world.buildings = info.buildings.map((e, index) =>
-            Building.load(e, index)
-        );
+        world.buildings = info.buildings.map((e, index) => Building.load(e, index));
         world.trees = info.trees.map((t) => new Tree(t.center, info.treeSize));
         world.laneGuides = info.laneGuides.map(
             (b) =>

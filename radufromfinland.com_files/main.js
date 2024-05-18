@@ -30,16 +30,6 @@ function generateCarInspector(index) {
 
 }
 
-function save() {
-
-    const brainString = JSON.stringify(bestCar.brain);
-    localStorage.setItem("bestBrain", brainString);
-
-    const carString = JSON.stringify(bestCar);
-    localStorage.setItem("car", carString);
-}
-
-
 function generateCars(N, markings) {
     const cars = [];
     let i = 0;
@@ -59,104 +49,12 @@ function generateCars(N, markings) {
 
 function animate(time) {
     lastLoop = new Date();
-
-    if (followBestCar) {
-        if (followBestCar instanceof Car) {
-            viewport.offset = scale(followBestCar, -1);
-        } else {
-            viewport.offset = scale(bestCar, -1);
-        }
-    }
     viewport.reset();
 
     lightBorders = world.markings
         .filter((m) => m instanceof Light && (m.state == "red" || m.state == "yellow"))
         .map((s) => [s.border.p1, s.border.p2]);
 
-    for (let i = 0; i < cars.length; i++) {
-        let minDist = Number.MAX_SAFE_INTEGER;
-        let nearest = null;
-        for (const t of targets) {
-            const d = distance(t.center, cars[i]);
-            if (d < minDist) {
-                minDist = d;
-                nearest = t;
-            }
-        }
-
-        const segs = world.getNearestGraphSegments(cars[i]);
-        if (
-            !cars[i].segment ||
-            segs.filter((s) => s.equals(cars[i].segment)).length == 0
-        ) {
-            cars[i].segment = segs[0];
-        }
-        if (segs.length > 0 && !segs[0].equals(cars[i].segment)) {
-            if (cars[i].segment.connectedTo(segs[0])) {
-                cars[i].segment = segs[0];
-                cars[i].layer = segs[0].layer;
-            }
-        }
-        for (const seg of segs) {
-            if (seg.connectedTo(cars[i].segment) && seg.layer == 1) {
-                cars[i].layer = 1;
-            }
-        }
-        const _borders = world
-            .getNearbyRoadBorders(cars[i]) //world.roadBorders
-            .filter((b) => b.layer == cars[i].layer)
-            .map((s) => [s.p1, s.p2]);
-
-        if (cars[i].state == "boat") {
-            cars[i].layer = null;
-            _borders.length = 0;
-        }
-        _borders.push(
-            ...world.getNearbyItemBorders(cars[i]).map((s) => [s.p1, s.p2])
-        );
-
-        cars[i].onRoad = world.isOnRoad(cars[i]);
-
-        const carBorders = [];
-        if (!optimizing) {
-            for (let j = 0; j < cars.length; j++) {
-                if (j != i) {
-                    const c = cars[j];
-                    if (!c.invulnerable && c.polygon) {
-                        carBorders.push([c.polygon[0], c.polygon[1]]);
-                        carBorders.push([c.polygon[1], c.polygon[2]]);
-                        carBorders.push([c.polygon[2], c.polygon[3]]);
-                        carBorders.push([c.polygon[3], c.polygon[0]]);
-                    }
-                }
-            }
-        }
-
-        cars[i].update(
-            _borders,
-            carBorders,
-            stopBorders,
-            lightBorders,
-            yieldCrossingBorders,
-            nearest
-        );
-
-        if (
-            cars[i].destination &&
-            distance(cars[i], cars[i].destination.center) < 200
-        ) {
-            let newTarget =
-                targets[Math.floor(Math.random() * targets.length)];
-            while (newTarget.center.equals(cars[i].destination.center)) {
-                newTarget =
-                    targets[Math.floor(Math.random() * targets.length)];
-            }
-            assignPath([cars[i]], newTarget);
-            if (cars[i] == bestCar) {
-                goingToSelect.value = newTarget.name;
-            }
-        }
-    }
 
     if (!optimizing) {
         for (let i = 0; i < cars.length - 1; i++) {
@@ -190,12 +88,8 @@ function animate(time) {
             }
         }
     }
-    for (let i = 0; i < cars.length; i++) {
-        cars[i].marked = false;
-    }
-    //debugger;
+
     if (bestI != -1) {
-        bestCar = cars[bestI];
         for (
             let j = 0;
             j < carMarkings.length && j + bestI < cars.length;
@@ -204,9 +98,6 @@ function animate(time) {
             cars[bestI + j].marked = true;
         }
     }
-
-    world.cars = cars;
-    world.bestCar = bestCar;
     const viewPoint = scale(viewport.getOffset(), -1);
     const regScaler = showGrid ? 1 : 2;
     const regionWidth = carCanvas.width * regScaler;

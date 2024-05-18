@@ -10,115 +10,16 @@ class MultiDecisionBoundary {
       this.nn = nn;
       this.fuzzy = false;
       this.defaultValues = [];
-      for (let i = 0; i < this.nn.inputNodes.length; i++) {
-         this.defaultValues[i] = 0;
-      }
 
       this.colors = colors;
 
       container.appendChild(document.createElement("br"));
       this.div = document.createElement("div");
       container.appendChild(this.div);
-
-      //console.log(options,options.entries());
-      //array iterator (second one)
-      /*
-      for (const [index, optionText] of options.entries()) {
-         //for (const optionText of options) {
-         const optionElement = document.createElement("button");
-         optionElement.value = optionText;
-         optionElement.textContent = optionText;
-         optionElement.style.backgroundColor = this.colors[index];
-         optionElement.style.color = "white"
-         optionElement.style.cursor = "default";
-         this.div.appendChild(optionElement);
-      }*/
-
-      this.updateImage();
    }
 
    updateBrain(nn) {
       this.nn = NN.load(JSON.parse(JSON.stringify(nn)));
-      this.updateImage();
-   }
-
-   updateImage() {
-      //this.ctx.globalAlpha=1;
-      this.ctx.fillStyle = "black";
-      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
-      //this.ctx.globalAlpha=0.5;
-      this.ctx.globalCompositeOperation = "lighter";
-      for (let x = 0; x < this.canvas.width; x += this.pixelSize) {
-         for (let y = 0; y < this.canvas.height; y += this.pixelSize) {
-            const point = this.nn.inputNodes.map((n) => n.value); //levels[0].inputs//this.defaultValues;//this.brain.levels[0].inputs.map((i) => 0);
-            if (point[0] == undefined) {
-               for (let i = 0; i < point.length; i++) {
-                  point[i] = 0;
-               }
-            }
-            let xDone = false;
-            let yDone = false;
-            for (let i = 0; i < this.nn.inputNodes.length; i++) {
-               if (this.nn.inputNodes[i].marked) {
-                  if (!xDone) {
-                     point[i] = 2 * (1 - y / this.canvas.height) - 1;
-                     xDone = true;
-                  } else if (!yDone) {
-                     point[i] = 2 * (x / this.canvas.width) - 1;
-                     yDone = true;
-                  }
-               }
-            }
-            /*
-            let index = 0;
-            const inputsInfo =
-               Visualizer.selectedInputs.length == 0
-                  ? [
-                       { inputPoint: true, index: 0 },
-                       { inputPoint: true, index: 1 },
-                    ]
-                  : Visualizer.selectedInputs;
-            for (const p of inputsInfo) {
-               point[p.index] =
-                  index == 0
-                     ? 2*(1 - y / this.canvas.height)-1
-                     : 2*(x / this.canvas.width)-1;
-               index++;
-            }*/
-            //debugger;
-
-            //const outputs = NeuralNetwork.feedForward(point, this.brain, !this.fuzzy);
-            const outputs = this.nn.feedForward(point, !this.fuzzy);
-            let any = false;
-            for (let i = 0; i < outputs.length; i++) {
-               if (this.fuzzy) {
-                  this.ctx.globalAlpha = Math.max(
-                     0,
-                     Math.min(1, outputs[i] + 0.8)
-                  );
-                  this.ctx.fillStyle = this.colors[i];
-                  this.ctx.fillRect(x, y, this.pixelSize, this.pixelSize);
-                  this.ctx.globalAlpha = 1;
-               } else if (outputs[i] == 1) {
-                  any = true;
-                  //if(this.nn.outputNodes[i].view){
-                  this.ctx.globalAlpha = 1;
-                  this.ctx.fillStyle = this.colors[i];
-                  this.ctx.fillRect(x, y, this.pixelSize, this.pixelSize);
-                  //}
-               }
-            } /*
-            if (!any) {
-               this.ctx.fillStyle = "black";
-               this.ctx.fillRect(x, y, 1, 1);
-            }*/
-         }
-      }
-
-      this.bg = new Image();
-      this.bg.src = this.canvas.toDataURL();
-      this.ctx.globalCompositeOperation = "source-over";
-      //this.ctx.globalAlpha=1;
    }
 
    draw(inputNodesArray) {

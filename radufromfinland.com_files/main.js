@@ -25,16 +25,13 @@ function generateCarInspector(index) {
 
     inspectionSection.appendChild(container);
     decisionBoundaries.push(db);
-    Visualizer.decisionBoundary = db;
 
     nnViewport = new Viewport(nnCanvas, 1, null, false, false);
 
 }
 
 function save() {
-    if (!bestCar) {
-        alert("All cars are damaged");
-    }
+
     const brainString = JSON.stringify(bestCar.brain);
     localStorage.setItem("bestBrain", brainString);
 
@@ -42,27 +39,6 @@ function save() {
     localStorage.setItem("car", carString);
 }
 
-function download() {
-    const carString = localStorage.getItem("car");
-    if (!carString) {
-        alert("No car to download");
-        return;
-    }
-    const element = document.createElement("a");
-    element.setAttribute(
-        "href",
-        "data:application/json;charset=utf-8," + encodeURIComponent(carString)
-    );
-    const fileName = "name.car";
-    element.setAttribute("download", fileName);
-    element.click();
-}
-
-function discard() {
-    localStorage.removeItem("bestBrain");
-    localStorage.removeItem("car");
-    localStorage.removeItem("selectedWeightsAndBiases");
-}
 
 function generateCars(N, markings) {
     const cars = [];
@@ -107,8 +83,6 @@ function animate(time) {
                 nearest = t;
             }
         }
-
-        //keep car layers not 1 layer
 
         const segs = world.getNearestGraphSegments(cars[i]);
         if (
@@ -167,8 +141,6 @@ function animate(time) {
             nearest
         );
 
-        handleEasterEggs(cars[i]);
-
         if (
             cars[i].destination &&
             distance(cars[i], cars[i].destination.center) < 200
@@ -214,9 +186,6 @@ function animate(time) {
         if (allAlive && (allStopped || stopForFittness == false)) {
             if (fittness > bestFittness) {
                 bestFittness = fittness;
-                //if(cars[i].brain.tick==null){
-                //cars[i].brain.tick = cars[i].ticks;
-                // }
                 bestI = i;
             }
         }
@@ -227,7 +196,6 @@ function animate(time) {
     //debugger;
     if (bestI != -1) {
         bestCar = cars[bestI];
-        //console.log(bestCar.brain.tick)
         for (
             let j = 0;
             j < carMarkings.length && j + bestI < cars.length;
@@ -267,200 +235,6 @@ function animate(time) {
     nnViewport.reset();
 
     requestAnimationFrame(animate);
-}
-
-function loadCar(event) {
-    const fileInput = event.target;
-    const file = fileInput.files[0];
-
-    if (!file) {
-        console.error("No file selected.");
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-        const fileContent = event.target.result;
-        /*const jsonData = JSON.parse(fileContent);
-      bestCar.brain = jsonData;*/
-        localStorage.setItem("car", fileContent);
-        localStorage.removeItem("selectedWeightsAndBiases");
-        location.reload();
-    };
-
-    reader.readAsText(file);
-}
-
-function loadWorld(event) {
-    const fileInput = event.target;
-    const file = fileInput.files[0];
-
-    if (!file) {
-        console.error("No file selected.");
-        return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = function (event) {
-        const fileContent = event.target.result;
-        //const jsonData = JSON.parse(fileContent);
-        //world.load(jsonData);
-        //world.generate(false);
-        localStorage.setItem("world", fileContent);
-        location.reload();
-    };
-
-    reader.readAsText(file);
-}
-
-function optimize() {
-    localStorage.setItem("optimizing", "on");
-    location.reload();
-}
-
-function test() {
-    location.reload();
-}
-
-function updateOptions() {
-    let updateBrain = bestCar.sensorOptions.rayCount != Number(rayCount.value);
-    if (
-        bestCar.sensorOptions.rayCount != Number(rayCount.value) ||
-        bestCar.sensorOptions.rayLength != Number(rayLength.value) ||
-        bestCar.sensorOptions.raySpread != Number(raySpread.value) ||
-        bestCar.sensorOptions.rayOffset != Number(rayOffset.value)
-    ) {
-        bestCar.sensorOptions.rayCount = Number(rayCount.value);
-        bestCar.sensorOptions.rayLength = Number(rayLength.value);
-        bestCar.sensorOptions.raySpread = Number(raySpread.value);
-        bestCar.sensorOptions.rayOffset = Number(rayOffset.value);
-        bestCar.setSensorOptions(bestCar);
-    }
-
-    const newOutputs = [];
-    if (output_forward.style.backgroundColor == "white") {
-        newOutputs.push("🠉");
-    }
-    if (output_left.style.backgroundColor == "white") {
-        newOutputs.push("🠈");
-    }
-    if (output_right.style.backgroundColor == "white") {
-        newOutputs.push("🠊");
-    }
-    if (output_reverse.style.backgroundColor == "white") {
-        newOutputs.push("🠋");
-    }
-
-    const newExtraInputs = [];
-    if (speedOnOff.checked) {
-        newExtraInputs.push("⏱️");
-    }
-    if (stopOnOff.checked) {
-        newExtraInputs.push("🛑");
-    }
-    if (lightOnOff.checked) {
-        newExtraInputs.push("🚦");
-    }
-    if (targetsOnOff.checked) {
-        newExtraInputs.push("🎯"); //!!! REMEMBER IN CAR
-    }
-    if (crossingOnOff.checked) {
-        newExtraInputs.push("🚶");
-    }
-    if (yieldOnOff.checked) {
-        newExtraInputs.push("⚠️");
-    }
-    if (parkingOnOff.checked) {
-        newExtraInputs.push("🅿️");
-    }
-
-    let newHiddenLayerNodeCounts = [];
-    if (hiddenOnOff.checked) {
-        newHiddenLayerNodeCounts = hiddenCount.value
-            .split(",")
-            .map((s) => Number(s));
-    }
-
-    if (
-        updateBrain ||
-        JSON.stringify(newOutputs) !=
-        JSON.stringify(bestCar.brainOptions.outputs) ||
-        JSON.stringify(newHiddenLayerNodeCounts) !=
-        JSON.stringify(bestCar.brainOptions.hiddenLayerNodeCounts) ||
-        JSON.stringify(newExtraInputs) !=
-        JSON.stringify(bestCar.brainOptions.extraInputs)
-    ) {
-        bestCar.brainOptions.hiddenLayerNodeCounts = newHiddenLayerNodeCounts;
-        bestCar.brainOptions.outputs = newOutputs;
-        bestCar.brainOptions.extraInputs = newExtraInputs;
-        bestCar.setBrainOptions(bestCar);
-        localStorage.removeItem("selectedWeightsAndBiases");
-    }
-
-    bestCar.type = aiOnOff.checked ? "AI" : "KEYS";
-
-    bestCar.autoForward = autoForwardOnOff.checked;
-
-    bestCar.setTypeAndAutoForward(bestCar);
-
-    //bestCar.setSensorAndBrainOptions(bestCar);
-    setInterfaceOptions(bestCar);
-    save();
-    //discard();
-    //save();
-    location.reload();
-}
-
-function zeroBrain() {
-    NeuralNetwork.makeZeros(bestCar.brain);
-    save();
-}
-
-function tryGiveBrain(newBrain) {
-    for (let i = 0; i < bestCar.brain.levels.length; i++) {
-        for (let j = 0; j < bestCar.brain.levels[i].biases.length; j++) {
-            try {
-                if (newBrain.levels[i].biases[j]) {
-                    bestCar.brain.levels[i].biases[j] =
-                        newBrain.levels[i].biases[j];
-                } else {
-                    throw new Error("not defined");
-                }
-            } catch (err) {
-                bestCar.brain.levels[i].biases[j] = 0;
-            }
-        }
-        for (let j = 0; j < bestCar.brain.levels[i].weights.length; j++) {
-            for (
-                let k = 0;
-                k < bestCar.brain.levels[i].weights[j].length;
-                k++
-            ) {
-                try {
-                    if (newBrain.levels[i].weights[j][k]) {
-                        bestCar.brain.levels[i].weights[j][k] =
-                            newBrain.levels[i].weights[j][k];
-                    } else {
-                        throw new Error("not defined");
-                    }
-                } catch (err) {
-                    bestCar.brain.levels[i].weights[j][k] = 0;
-                }
-            }
-        }
-    }
-}
-
-function updateMutation() {
-    localStorage.setItem("mutation", mutationSld.value / 100);
-}
-
-function changeTarget(el) {
-    miniMap.img = new Image();
-    const theCars = optimizing ? cars : [bestCar];
-    goingToImg.src = miniMap.img.src;
 }
 
 function assignPath(cars, target) {
@@ -503,42 +277,4 @@ function giveAllPaths() {
         );
         cars[i].destination = targets[targetIndex];
     }
-}
-
-function handleEasterEggs(car) {
-    if (car.state == "helicopter") {
-        return;
-    }
-    const carPoly = new Polygon(car.polygon)
-    let insideWater = false;
-    for (const p of world.water.polys) {
-        if (p.containsPoly(carPoly)) {
-            insideWater = true;
-        }
-    }
-    for (const p of world.water.innerPolys) {
-        if (p.containsPoly(carPoly)) {
-            insideWater = false;
-        }
-    }
-    if (insideWater) {
-        if (car.borderDamaged) {
-            if (car.state == "car") {
-                car.state = "helicopter";
-                car.maxSpeed = 10;
-                car.increaseSize();
-                return;
-            }
-        }
-        if (!car.onRoad) {
-            if (car.state == "car") {
-                car.state = "boat";
-            }
-        }
-    } else {
-        if (car.state == "boat") {
-            car.state = "car";
-        }
-    }
-
 }

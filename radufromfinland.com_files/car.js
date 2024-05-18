@@ -26,19 +26,6 @@ class Car {
       this.setSensorAndBrainOptions(carOptions);
    }
 
-   increaseSize(){
-      let cnt=0;
-      const int=setInterval(()=>{
-         cnt++;
-         if(cnt>30){
-            clearInterval(int);
-            return;
-         }
-         this.width*=1.018;
-         this.height*=1.018;
-      },30)
-   }
-
    resetControls() {
       this.controls = new Controls(this.type);
    }
@@ -99,7 +86,6 @@ class Car {
             ...carOptions.brainOptions.hiddenLayerNodeCounts,
             carOptions.brainOptions.outputs.length,
          ]);
-         this.nn = NNEditor.graphFromCar(this, nnCanvas.width, nnCanvas.height);
       }
    }
 
@@ -126,7 +112,7 @@ class Car {
 
       this.img = new Image();
       if (carOptions.height > carOptions.width * 2) {
-         this.img.src = "bus.png";
+         this.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/bus.png";
       } else {
          this.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/imgs/car.png";
       }
@@ -183,36 +169,13 @@ class Car {
       };
    }
 
-   clone(info) {
-      this.setSensorAndBrainOptions(info);
-      this.brain = info.brain;
-
-      /*if(info.nn){
-         this.nn=NN.load(info.nn);
-      }else{
-         this.nn=NNEditor.graphFromCar(this,rightBarWidth,rightBarWidth);
-      }*/
-   }
 
    activateRespaunSequence(reset = false) {
-      //return;
       if (this.message == null) {
          this.message = "DAMAGED";
          this.tm=setTimeout(() => {
             this.message = null;
             this.respaun(reset);
-            /*
-                this.message = "Respaun in 3";
-                setTimeout(() => {
-                    this.message = "Respaun in 2";
-                    setTimeout(() => {
-                        this.message = "Respaun in 1";
-                        setTimeout(() => {
-                            this.message = null;
-                            this.respaun(reset);
-                        }, 1000);
-                    }, 1000);
-                }, 1000);*/
          }, 1500);
       }
    }
@@ -320,30 +283,6 @@ class Car {
             }
 
             this.inputs = offsets;
-            const old_outputs = NeuralNetwork.feedForward(offsets, this.brain);
-
-            const outputs = this.nn.feedForward(offsets);
-
-            if (this.useBrain) {
-               for (let i = 0; i < outputs.length; i++) {
-                  const opt = this.brainOptions.outputs[i];
-                  switch (opt) {
-                     case "🠉":
-                        this.controls.forward = outputs[i];
-                        break;
-                     case "🠈":
-                        this.controls.left = outputs[i];
-                        break;
-                     case "🠊":
-                        this.controls.right = outputs[i];
-                        break;
-                     case "🠋":
-                        this.controls.reverse = outputs[i];
-                        break;
-                  }
-               }
-            }
-            //this.controls.forward ||= this.autoForward;
          }
          this.ticks++;
       }
@@ -358,13 +297,6 @@ class Car {
             return true;
          }
       }
-      /*
-      for (let i = 0; i < traffic.length; i++) {
-         if (polysIntersect(this.polygon, traffic[i].polygon)) {
-            return true;
-         }
-      }
-      */
       return false;
    }
 
@@ -448,20 +380,6 @@ class Car {
 
    respaun(reset) {
       this.damaged = false;
-      if (reset) {
-         /*
-            const seg = getNearestSegment(this, world.laneGuides);
-            const around = new Point(
-            this.x + (Math.random() - 0.5) * 100,
-            this.y + (Math.random() - 0.5) * 100
-        );
-            const proj = seg.projectPoint(this);
-            this.x = proj.point.x;
-            this.y = proj.point.y;
-            //this.speed = -this.speed;
-            this.angle = -angle(seg.directionVector()) + Math.PI / 2;
-            */
-      }
       this.invulnerable = true;
       setTimeout(() => {
          this.invulnerable = false;
@@ -490,9 +408,6 @@ class Car {
          
       }
       this.frameCount++;
-      /*if (this.damaged) {
-         return;
-      }*/
 
       if (this.fakeSensor && !optimize) {
          //if (this.sensor) {
@@ -520,17 +435,6 @@ class Car {
          this.carSensor.draw(ctx, this.color, true);
       }
 
-      /*
-      if(this.target && !optimize){
-         ctx.beginPath();
-         ctx.moveTo(this.x,this.y);
-         ctx.lineTo(this.target.center.x,this.target.center.y);
-         ctx.strokeStyle="black";
-         ctx.lineWidth=1;
-         ctx.setLineDash([2,2]);
-         ctx.stroke();
-         ctx.setLineDash([]);
-      }*/
 
       if (optimize) {
          ctx.beginPath();

@@ -17,73 +17,6 @@
     <div id="inspectionSection">
     </div>
 
-    <div id="optionsPanel" class="panel" style="display: none">
-        <label for="rayCount">Ray Count</label>
-        <input id="rayCount" type="number">
-        <br>
-        <label for="rayLength">Ray Length</label>
-        <input id="rayLength" type="number">
-        <br>
-        <label for="raySpread">Ray Spread</label>
-        <input id="raySpread" type="number">
-        <br>
-        <label for="rayOffset">Ray Offset</label>
-        <input id="rayOffset" type="number">
-        <br>
-        <span>Outputs</span>
-        <div id="outputs">
-            <button id="output_forward" onclick="toggleOutput(&#39;🠉&#39;)" style="background-color: white;">
-                🠉
-            </button>
-            <button id="output_left" onclick="toggleOutput(&#39;🠈&#39;)" style="background-color: white;">🠈</button>
-            <button id="output_right" onclick="toggleOutput(&#39;🠊&#39;)" style="background-color: white;">🠊</button>
-            <button id="output_reverse" onclick="toggleOutput(&#39;🠋&#39;)" style="background-color: white;">
-                🠋
-            </button>
-        </div>
-        <br>
-        <div style="display: flex">
-            <label for="hiddenOnOff">Hidden</label>
-            <input type="checkbox" id="hiddenOnOff" onchange="toggleHidden()">
-            <label for="hiddenCount" style="margin-left: 10px">Count</label>
-            <input id="hiddenCount" type="text" style="width: 30px; margin-left: 5px" value="2,3">
-        </div>
-        <label for="aiOnOff">AI</label>
-        <input type="checkbox" id="aiOnOff">
-        <label for="autoForwardOnOff" style="margin-left: 30px">Auto 🠉</label>
-        <input type="checkbox" id="autoForwardOnOff">
-        <br>
-        <label for="speedOnOff">Speed Sensor</label>
-        <input type="checkbox" id="speedOnOff">
-        <br>
-        <label for="stopOnOff">Stop Detector</label>
-        <input type="checkbox" id="stopOnOff">
-        <br>
-        <label for="yieldOnOff">Yield Detector</label>
-        <input type="checkbox" id="yieldOnOff">
-        <br>
-        <label for="lightOnOff">Light Detector</label>
-        <input type="checkbox" id="lightOnOff">
-        <br>
-        <label for="crossingOnOff">Crossing Detector</label>
-        <input type="checkbox" id="crossingOnOff">
-        <br>
-        <label for="parkingOnOff">Parking Detector</label>
-        <input type="checkbox" id="parkingOnOff">
-        <br>
-        <label for="targetsOnOff">Target Detector</label>
-        <input type="checkbox" id="targetsOnOff">
-        <br>
-        <br>
-        <button onclick="updateOptions()" style="background-color: lime">
-            ✔️
-        </button>
-        <button onclick="cancelOptions()" style="background-color: pink">
-            ❌
-        </button>
-    </div>
-
-
     <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
         🧿
     </button>
@@ -130,7 +63,6 @@
 <script src="./segment.js"></script>
 <script src="./polygon.js"></script>
 <script src="./envelope.js"></script>
-<script src="./nnEditor.js"></script>
 <script src="./nn.js"></script>
 <script src="./decisionBoundary.js"></script>
 <script src="./multiDecisionBoundary.js"></script>
@@ -138,7 +70,6 @@
 <script src="./carInfo.js"></script>
 
 <script src="./miniMap.js"></script>
-<script src="./visualizer.js"></script>
 <script src="./network.js"></script>
 <script src="./sensor.js"></script>
 <script src="./utils(1).js"></script>
@@ -192,7 +123,7 @@
     followBtn.style.left = carCanvas.width - 120 + "px";
     followBtn.style.top = window.innerHeight - 120 + "px";
 
-    setInterfaceOptions(carInfo);
+
 
     const nnCanvas = document.createElement("canvas");
     nnCanvas.height = window.innerHeight - rightBarWidth - 300;
@@ -242,32 +173,10 @@
     const optimizing = localStorage.getItem("optimizing");
     const N = optimizing ? maxCarCount : carMarkings.length;
     const cars = generateCars(N, carMarkings);
-
-    if (carInfo) {
-        setInterfaceOptions(carInfo);
-        for (let i = 0; i < cars.length; i++) {
-            //cars[i].brain = JSON.parse(localStorage.getItem("bestBrain"));
-            cars[i].clone(carInfo);
-            cars[i].nn = NN.load(carInfo.nn, nnCanvas.height);
-
-            if (i > 0) {
-
-            }
-        }
-    }
-    for (let i = 0; i < cars.length; i += carMarkings.length) {
-        for (
-            let j = 1;
-            j < carMarkings.length && i + j < cars.length;
-            j++
-        ) {
-            cars[i + j].brain = JSON.parse(JSON.stringify(cars[i].brain));
-            cars[i + j].nn = NN.load(JSON.parse(JSON.stringify(cars[i].nn)));
-        }
-    }
-
     let bestCar = cars[0];
-    viewport.flyTo(bestCar, true);
+    // TODO: implement a better way to fly to the best car
+    // viewport.flyTo(bestCar, true);
+
     let nnViewport = null;
     const decisionBoundaries = [];
     generateCarInspector(0);
@@ -287,134 +196,12 @@
         animate();
     }, 500);
 
-    function setInterfaceOptions(carInfo) {
-        rayCount.value = carInfo.sensorOptions.rayCount;
-        rayLength.value = carInfo.sensorOptions.rayLength;
-        raySpread.value = carInfo.sensorOptions.raySpread;
-        rayOffset.value = carInfo.sensorOptions.rayOffset;
-        output_forward.style.backgroundColor =
-            carInfo.brainOptions.outputs.includes("🠉") ? "white" : "gray";
-        output_left.style.backgroundColor =
-            carInfo.brainOptions.outputs.includes("🠈") ? "white" : "gray";
-        output_right.style.backgroundColor =
-            carInfo.brainOptions.outputs.includes("🠊") ? "white" : "gray";
-        output_reverse.style.backgroundColor =
-            carInfo.brainOptions.outputs.includes("🠋") ? "white" : "gray";
-
-        hiddenOnOff.checked =
-            carInfo.brainOptions.hiddenLayerNodeCounts.length > 0;
-        if (hiddenOnOff.checked) {
-            hiddenCount.value =
-                carInfo.brainOptions.hiddenLayerNodeCounts.join(",");
-        } else {
-            hiddenCount.value = "3,4";
-        }
-        toggleHidden();
-
-        aiOnOff.checked = carInfo.type == "AI";
-        speedOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("⏱️");
-        stopOnOff.checked = carInfo.brainOptions.extraInputs.includes("🛑");
-        lightOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("🚦");
-        targetsOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("🎯"); //!!! REMEMBER IN CAR
-        crossingOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("🚶");
-        yieldOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("⚠️");
-        parkingOnOff.checked =
-            carInfo.brainOptions.extraInputs.includes("🅿️");
-
-        autoForwardOnOff.checked = carInfo.autoForward;
-
-        localStorage.setItem("defaultOptions", JSON.stringify(carInfo));
-    }
-
-    function openOptionsPanel() {
-        optionsPanel.style.display = "block";
-    }
-
-    function cancelOptions() {
-        optionsPanel.style.display = "none";
-    }
-
-    function toggleHidden() {
-        if (hiddenOnOff.checked) {
-            hiddenCount.disabled = false;
-        } else {
-            hiddenCount.disabled = true;
-        }
-    }
-
-    function toggleOutput(emoji) {
-        switch (emoji) {
-            case "🠉":
-                output_forward.style.backgroundColor =
-                    output_forward.style.backgroundColor == "white"
-                        ? "gray"
-                        : "white";
-                break;
-            case "🠈":
-                output_left.style.backgroundColor =
-                    output_left.style.backgroundColor == "white"
-                        ? "gray"
-                        : "white";
-                break;
-            case "🠊":
-                output_right.style.backgroundColor =
-                    output_right.style.backgroundColor == "white"
-                        ? "gray"
-                        : "white";
-                break;
-            case "🠋":
-                output_reverse.style.backgroundColor =
-                    output_reverse.style.backgroundColor == "white"
-                        ? "gray"
-                        : "white";
-                break;
-        }
-    }
-
-    function selectCar(index) {
-        bestCar = cars[index];
-        viewport.flyTo(bestCar, true);
-        bestCar.resetControls();
-        goingToSelect.value = bestCar.destination.name;
-        manual = !bestCar.useBrain;
-        manualBtn.style.backgroundColor = manual ? "blue" : "rgba(0,0,0,0)";
-    }
 
     function followCar() {
         //followBestCar=true;
-        viewport.flyTo(bestCar, true);
+        // viewport.flyTo(bestCar, true);
     }
 
-    function toggleManual() {
-        manual = !manual;
-        bestCar.useBrain = !manual;
-        bestCar.controls.forward = false;
-        bestCar.controls.left = false;
-        bestCar.controls.right = false;
-        bestCar.controls.reverse = false;
-        if (manual) {
-            goingToSelect.style.pointerEvents = "none";
-            goingToSelect.style.opacity = 0.5;
-            bestCar.resetControls();
-            bestCar.assignedBorders = [];
-            bestCar.shortestPath = [];
-            miniMap.destination = null;
-        } else {
-            changeTarget(goingToSelect);
-            goingToSelect.style.pointerEvents = "";
-            goToPanel.style.opacity = 1;
-        }
-        manualBtn.style.backgroundColor = manual ? "blue" : "rgba(0,0,0,0)";
-    }
-
-    function navToLink() {
-        window.open(linkToVisit, "_blank");
-    }
 </script>
 
 

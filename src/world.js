@@ -15,18 +15,19 @@ class World {
         this.buildingMinLength = buildingMinLength;
         this.spacing = spacing;
         this.treeSize = treeSize;
-
+        /** @type {Envelope[]} */
         this.envelopes = [];
         this.roadBorders = [];
+        /** @type {Building[]} */
         this.buildings = [];
+
         this.trees = [];
         this.laneGuides = [];
 
+        /** @type {Marking[]} */
         this.markings = [];
 
-        /**
-         * @type {Car[]}
-         */
+        /** @type {Car[]} */
         this.cars = [];
 
         this.bestCar = null;
@@ -70,9 +71,7 @@ class World {
         }
         world.buildings = info.buildings.map((e, index) => Building.load(e, index));
         world.trees = info.trees.map((t) => new Tree(t.center, info.treeSize));
-        world.laneGuides = info.laneGuides.map(
-            (b) =>
-                new Segment(new Point(b.p1.x, b.p1.y), new Point(b.p2.x, b.p2.y))
+        world.laneGuides = info.laneGuides.map((b) => new Segment(new Point(b.p1.x, b.p1.y), new Point(b.p2.x, b.p2.y))
         );
         world.markings = info.markings.map((m) => Marking.load(m));
         try {
@@ -459,41 +458,8 @@ class World {
     }
 
     #drawCars(ctx, optimizing, layerCheck = null, boats = false) {
-        if (optimizing) {
-            ctx.globalAlpha = 0.2;
-            for (const car of this.cars) {
-                if (car.state == "boat" && boats == false) {
-                    continue;
-                }
-                if (car.state != "boat" && boats == true) {
-                    continue;
-                }
-                if (car.layer == layerCheck) {
-                    car.draw(ctx, true);
-                }
-            }
-            ctx.globalAlpha = 1;
-            if (
-                this.bestCar &&
-                ((this.bestCar.state == "boat" && boats == true) ||
-                    (this.bestCar.state != "boat" && boats == false))
-            ) {
-                if (this.bestCar.layer == layerCheck) {
-                    this.bestCar.draw(ctx);
-                }
-            }
-        } else {
-            for (const car of this.cars) {
-                if (car.state == "boat" && boats == false) {
-                    continue;
-                }
-                if (car.state != "boat" && boats == true) {
-                    continue;
-                }
-                if (car.layer == layerCheck) {
-                    car.draw(ctx);
-                }
-            }
+        for (const car of this.cars) {
+            car.draw(ctx);
         }
     }
 

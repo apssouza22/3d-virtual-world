@@ -1,13 +1,11 @@
-class Car {
+class Car extends WorldItem {
     constructor(x, y, angle = 0, carOptions) {
-        this.ticks = 0;
+        super();
         this.x = x;
         this.y = y;
-        this.speed = 0;
         this.angle = angle + Math.PI / 2;
 
         this.frameCount = 0;
-        this.state = "car";
         this.polygon = this.createPolygon();
         this.setOptions(carOptions);
     }
@@ -26,23 +24,6 @@ class Car {
         this.img = new Image();
         this.img.src = "https://radufromfinland.com/projects/virtualworld/CAR/car.png";
         this.carImg = this.img;
-
-        this.mask = document.createElement("canvas");
-        this.mask.width = carOptions.width;
-        this.mask.height = carOptions.height;
-
-        this.carMask = this.mask;
-
-        const maskCtx = this.mask.getContext("2d");
-        this.img.onload = () => {
-            maskCtx.fillStyle = carOptions.color;
-            maskCtx.rect(0, 0, this.width, this.height);
-            maskCtx.fill();
-
-            maskCtx.globalCompositeOperation = "destination-atop";
-            maskCtx.drawImage(this.img, 0, 0, this.width, this.height);
-        };
-
     }
 
 
@@ -70,9 +51,8 @@ class Car {
     }
 
 
-    draw(ctx, optimize = false) {
+    draw(ctx) {
         this.img = this.carImg;
-        this.mask = this.carMask;
         this.frameCount++;
         ctx.save();
         ctx.translate(this.x, this.y);

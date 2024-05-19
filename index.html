@@ -5,14 +5,17 @@
         <title>Self-driving car - No libraries</title>
         <link rel="stylesheet" href="style.css">
     </head>
-    <body data-new-gr-c-s-check-loaded="14.1173.0" data-gr-ext-installed="">
+    <body>
     <div id="loading" style="padding: 5px; border-radius: 5px; background-color: rgba(255, 255, 255, 0.7); position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-family: Arial; font-size: 20px;">
         🚙🚙🚙🚙🚙 LOADING
         <span style="transform: scale(-1, 1); display: inline-block">🚙🚙🚙🚙🚙</span>
     </div>
 
     <div id="stage">
-        <canvas id="carCanvas" width="1088" height="1010"></canvas>
+        <div id="canvasContainer">
+            <canvas id="carCanvas"></canvas>
+            <canvas id="cameraCanvas"></canvas>
+        </div>
         <div id="inspectionSection"></div>
         <button id="followBtn" title="Follow Car" onclick="followCar()" style="position: absolute; opacity: 1; transition: all 0.5s ease 0s; font-size: 80px; background: none; left: 968px; top: 890px;">
             🧿
@@ -58,11 +61,13 @@
     <script src="src/data/many_targets_small.js"></script>
     <script src="src/data/dublin-water.js"></script>
     <script src="src/data/dublin-buildings.js"></script>
+    <script src="src/camera.js"></script>
 
     <script>
         // const roads = Osm.parseRoads(openMapData);
         const buildings = Osm.parseBuildings(dublinBuildings);
         const waters = Osm.parseWaters(dublinWater);
+
 
         console.log("buildings", buildings);
         console.log("waters", waters);
@@ -86,15 +91,19 @@
         const rightBarWidth = 500;
         const carCanvas = document.getElementById("carCanvas");
         carCanvas.width = window.innerWidth - rightBarWidth - verticalButtonsWidth;
-        carCanvas.height = window.innerHeight;
+        carCanvas.height = window.innerHeight /2;
+        const carCtx = carCanvas.getContext("2d");
+
+        const cameraCanvas = document.getElementById("cameraCanvas");
+        cameraCanvas.width = window.innerWidth - rightBarWidth - verticalButtonsWidth;
+        cameraCanvas.height = window.innerHeight /2;
+        const cameraCtx = cameraCanvas.getContext("2d");
 
         followBtn.style.left = carCanvas.width - 120 + "px";
         followBtn.style.top = window.innerHeight - 120 + "px";
 
         const grid = Grid.load(carCanvas, world, world.grid);
-
         const viewport = new Viewport(carCanvas, 2, world.offset, true, true, 0);
-        const carCtx = carCanvas.getContext("2d");
         const carMarkings = world.markings.filter((m) => m instanceof Start);
 
         let lightBorders = world.markings
@@ -106,6 +115,8 @@
         /** @type {Car[]}  */
         const cars = generateCars(carMarkings.length, carMarkings);
         world.cars = cars;
+        const camera = new Camera(cars[0]);
+
         // TODO: implement a better way to fly to the best car
         // viewport.flyTo(cars[0], true);
 

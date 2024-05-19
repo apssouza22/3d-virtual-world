@@ -73,6 +73,8 @@ function animate(time) {
 
     miniMap.update(viewPoint);
     world.draw(carCtx, viewPoint, false, activeRegion);
+    camera.move(cars[0]);
+    camera.render(cameraCtx, world);
     requestAnimationFrame(animate);
 }
 

@@ -16,7 +16,7 @@ class Marking  {
 
    static load(info) {
       const point = new Point(info.center.x, info.center.y);
-      const dir = new Point(info.directionVector.x, info.directionVector.y,false);
+      const dir = new Point(info.directionVector.x, info.directionVector.y,0,false);
       switch (info.type) {
          case "crossing":
             return new Crossing(point, dir, info.width, info.height);

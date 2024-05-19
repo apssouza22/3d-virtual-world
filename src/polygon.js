@@ -44,20 +44,23 @@ class Polygon {
       }
    }
 
-   static break(poly1, poly2) {
+   static break(poly1, poly2, markIntersections = false) {
       const segs1 = poly1.segments;
       const segs2 = poly2.segments;
       for (let i = 0; i < segs1.length; i++) {
          for (let j = 0; j < segs2.length; j++) {
             const int = getIntersection(
-               segs1[i].p1,
-               segs1[i].p2,
-               segs2[j].p1,
-               segs2[j].p2
+                segs1[i].p1,
+                segs1[i].p2,
+                segs2[j].p1,
+                segs2[j].p2
             );
 
             if (int && int.offset != 1 && int.offset != 0) {
                const point = new Point(int.x, int.y);
+               if (markIntersections) {
+                  point.intersection = true;
+               }
                let aux = segs1[i].p2;
                segs1[i].p2 = point;
                segs1.splice(i + 1, 0, new Segment(point, aux));
@@ -180,6 +183,9 @@ class Polygon {
          join = "miter",
       } = {}
    ) {
+      if(this.points.length<2){
+         return;
+      }
       ctx.beginPath();
       ctx.fillStyle = fill;
       ctx.strokeStyle = stroke;

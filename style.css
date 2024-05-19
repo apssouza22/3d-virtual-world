@@ -14,6 +14,14 @@ body {
    opacity:0;
    transition:0.5s;
 }
+#canvasContainer {
+   display: flex;
+   flex-direction: column;
+   align-items: center;
+}
+#cameraCanvas{
+   background-image: linear-gradient(#8cf, white 70%);
+}
 
 #verticalButtons {
    display: flex;

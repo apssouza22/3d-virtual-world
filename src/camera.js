@@ -1,22 +1,4 @@
 class Camera {
-    #handleKeyDown(evt) {
-        const speed = 10;
-        if (evt.key === "w") {
-            this.x = this.x - speed * Math.sin(this.angle)
-            this.y = this.y - speed * Math.cos(this.angle)
-        }
-        if (evt.key === "s") {
-            this.x = this.x + speed * Math.sin(this.angle)
-            this.y = this.y + speed * Math.cos(this.angle)
-        }
-        if (evt.key === "a") {
-            this.moveAngle(this.angle + 0.03)
-        }
-        if (evt.key === "d") {
-            this.moveAngle(this.angle - 0.03)
-        }
-
-    }
 
     constructor({x, y, angle}, range = 1000, distanceBehind = 150) {
         this.range = range;
@@ -144,7 +126,7 @@ class Camera {
 
         const roadPolys = this.#extrude(this.#filter(
             world.roadBorders.map((s) => new Polygon([s.p1, s.p2]))
-        ), 10);
+        ), 5);
 
         const carPolygons = world.cars
             .map((c) => c.polygon)
@@ -159,9 +141,8 @@ class Camera {
 
     render(ctx, world) {
         const polys = this.#getPolys(world);
-
-        const projPolys = polys.map(
-            (poly) => new Polygon(
+        /** @type {Polygon[]} */
+        const projPolys = polys.map((poly) => new Polygon(
                 poly.points.map((p) => this.#projectPoint(ctx, p))
             )
         );
@@ -169,12 +150,31 @@ class Camera {
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 
         for (const poly of projPolys) {
-            poly.draw(ctx);
+            poly.draw(ctx, {fill: "#DDD", stroke: "#555", join: "round"});
         }
     }
 
     draw(ctx) {
         this.poly.draw(ctx);
+    }
+
+    #handleKeyDown(evt) {
+        const speed = 10;
+        if (evt.key === "w") {
+            this.x = this.x - speed * Math.sin(this.angle)
+            this.y = this.y - speed * Math.cos(this.angle)
+        }
+        if (evt.key === "s") {
+            this.x = this.x + speed * Math.sin(this.angle)
+            this.y = this.y + speed * Math.cos(this.angle)
+        }
+        if (evt.key === "a") {
+            this.moveAngle(this.angle + 0.03)
+        }
+        if (evt.key === "d") {
+            this.moveAngle(this.angle - 0.03)
+        }
+
     }
 
     #addEventListeners() {

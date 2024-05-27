@@ -39,6 +39,11 @@ class Segment {
       return Math.min(distToP1, distToP2);
    }
 
+   /**
+    * Projects a point onto the segment
+    * @param {Point} point
+    * @returns {{offset: number, point: Point}}
+    */
    projectPoint(point) {
       const a = subtract(point, this.p1);
       const b = subtract(this.p2, this.p1);

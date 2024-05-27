@@ -1,5 +1,5 @@
 class Point {
-    constructor(x, y, z = 0, round = true) {
+    constructor(x, y, z = 0, round = true, offset = 0) {
         if (round) {
             this.x = Math.round(x);
             this.y = Math.round(y);
@@ -9,6 +9,7 @@ class Point {
             this.y = y;
             this.z = z;
         }
+        this.offset = offset;
     }
 
     hash() {

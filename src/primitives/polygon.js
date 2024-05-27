@@ -177,8 +177,7 @@ class Polygon {
         }
     }
 
-    draw(
-        ctx,
+    draw(ctx,
         {
             stroke = "blue",
             lineWidth = 2,

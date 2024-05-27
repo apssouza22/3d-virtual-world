@@ -71,7 +71,7 @@ class Camera {
      */
     #projectPoint(ctx, p) {
         const seg = new Segment(this.center, this.tip);
-        const {point: p1} = seg.projectPoint(p);
+        const {point: p1,offset:of} = seg.projectPoint(p);
         // This line calculates the cross product of two vectors:
         // one from the camera to the projected point p1, and one from the camera to the original point p. The cross product is a measure of the area of the parallelogram formed by the two vectors, and its sign indicates the direction of rotation from the first vector to the second.
         const c = cross(subtract(p1, this), subtract(p, this));
@@ -86,7 +86,7 @@ class Camera {
         const cY = ctx.canvas.height / 2;
         const scaler = Math.max(cX, cY);
         //This line calculates the final coordinates of the projected point on the 2D canvas, and returns a new Point object with these coordinates. The x and y coordinates are calculated by adding the scaled x and y values to the center of the canvas.
-        return new Point(cX + x * scaler, cY + y * scaler);
+        return new Point(cX + x * scaler, cY + y * scaler, 0, true, of);
     }
 
 
@@ -190,6 +190,13 @@ class Camera {
                 poly.points.map((p) => this.#projectPoint(ctx, p))
             )
         );
+
+        // Sorting the polygons by the z-coordinate of the point with the largest z-coordinate in each polygon.
+        projPolys.sort((a, b) => {
+            const zA = a.points.reduce((acc, p) => acc > p.offset ? acc : p.offset, 0);
+            const zB = b.points.reduce((acc, p) => acc > p.offset ? acc : p.offset, 0);
+            return zB - zA;
+        })
 
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
 

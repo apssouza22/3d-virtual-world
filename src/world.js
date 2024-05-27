@@ -454,7 +454,7 @@ class World {
         }
     }
 
-    #drawCars(ctx, optimizing, layerCheck = null, boats = false) {
+    #drawCars(ctx) {
         for (const car of this.cars) {
             car.draw(ctx);
         }

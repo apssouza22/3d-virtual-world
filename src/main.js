@@ -33,6 +33,8 @@ function generateCars(N, markings) {
             ...defaultOptions, //,
             //maxSpeed,
             color: carColors[i % carColors.length],
+            width: 30,
+            height: 60,
         });
         cars.push(car);
         i++;

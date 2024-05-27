@@ -6,8 +6,8 @@ class Car extends WorldItem {
         this.angle = angle + Math.PI / 2;
 
         this.frameCount = 0;
-        this.polygon = this.createPolygon();
         this.setOptions(carOptions);
+        this.polygon = this.createPolygon();
     }
 
     setOptions(carOptions) {

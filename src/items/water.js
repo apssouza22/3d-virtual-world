@@ -1,7 +1,7 @@
 class Water extends WorldItem {
     static load(waterInfo) {
         const water = new Water([]);
-        water.polys = waterInfo.polys.map((p) =>
+        water.poly = waterInfo.polys.map((p) =>
             new Polygon(p.points)
         );
         water.innerPolys = waterInfo.innerPolys.map((p) =>
@@ -24,7 +24,7 @@ class Water extends WorldItem {
             }
         }
 
-        this.polys = polys
+        this.poly = polys
         this.innerPolys = polys
         return
 
@@ -38,7 +38,7 @@ class Water extends WorldItem {
     draw(ctx) {
         let color = "#0096FF";
 
-        for (const poly of this.polys) {
+        for (const poly of this.poly) {
             poly.draw(ctx, {fill: color, stroke: "rgba(0,0,0,0)"});
         }
 

@@ -135,7 +135,7 @@ class World {
             ...this.envelopes.map((e) => e.poly),
         ];
         if (this.water) {
-            illegalPolys.push(...this.water.polys);
+            illegalPolys.push(...this.water.poly);
         }
 
         const trees = [];

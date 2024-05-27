@@ -68,4 +68,8 @@ class Car extends WorldItem {
         ctx.globalCompositeOperation = "source-over";
         ctx.restore();
     }
+
+    poly() {
+        return new Polygon(this.polygon.map((p) => new Point(p.x, p.y)));
+    }
 }

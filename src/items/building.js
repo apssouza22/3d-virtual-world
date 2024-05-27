@@ -1,4 +1,10 @@
 class Building extends WorldItem {
+
+    /**
+     *
+     * @param {Polygon}poly
+     * @param height
+     */
     constructor(poly, height = 200) {
         super();
         this.base = poly;
@@ -6,6 +12,10 @@ class Building extends WorldItem {
         this.imgOffset = new Point(0, 0);
         this.imgScaler = 1;
         this.base.simplify();
+    }
+
+    poly() {
+        return this.base;
     }
 
     static load(info, index) {

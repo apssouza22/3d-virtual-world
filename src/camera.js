@@ -75,6 +75,13 @@ class Camera {
         return new Point(cX + x * scaler, cY + y * scaler);
     }
 
+
+    /**
+     * Filters out polygons that are not visible to the camera
+     *
+     * @param {Polygon[]} polys
+     * @returns {Polygon[]} The visible polygons
+     */
     #filter(polys) {
         const filteredPolys = [];
         for (const poly of polys) {
@@ -91,13 +98,24 @@ class Camera {
                     (p) => p.intersection || this.poly.containsPoint(p)
                 );
                 filteredPolys.push(new Polygon(filteredPoints));
-            } else if (this.poly.containsPoly(poly)) {
+                continue
+            }
+
+            if (this.poly.containsPoly(poly)) {
                 filteredPolys.push(poly);
             }
         }
         return filteredPolys;
     }
 
+    /**
+     * Extrusion is the process of stretching a flat, 2D shape vertically to create a 3D object in a scene.
+     * For example, you can extrude building polygons by a height value to create three-dimensional building shapes.
+     *
+     * @param {Polygon[]} polys
+     * @param  {number} height The height of the extrusion
+     * @returns {Polygon[]} The extruded polygons
+     */
     #extrude(polys, height = 10) {
         const extrudedPolys = [];
         for (const poly of polys) {
@@ -120,29 +138,35 @@ class Camera {
 
     /** @param {World} world */
     #getPolys(world) {
-        const buildingPolys = this.#extrude(this.#filter(
-            world.buildings.map((b) => b.base)
-        ), 200);
+        const buildingPolys = this.#extrudeItems(world.buildings, 200);
+        const carPolys = this.#extrudeItems(world.cars, 10);
+        const roadPolys = this.#extrudeItems(
+            world.roadBorders.map(s => new WorldItem(new Polygon([s.p1, s.p2]))),
+            5
+        );
 
-        const roadPolys = this.#extrude(this.#filter(
-            world.roadBorders.map((s) => new Polygon([s.p1, s.p2]))
-        ), 5);
+        // const carPolygons = world.cars.map((c) => c.poly())
+        // const carPolys = this.#extrudeCar(carPolygons[0], world.cars[0]);
 
-        const carPolygons = world.cars
-            .map((c) => c.polygon)
-            .map((p) => new Polygon(p.map((p) => new Point(p.x, p.y))))
-
-        // let bestCar = this.#filter(carPolygons)[0];
-
-        const carPolys = this.#extrudeCar(carPolygons[0], world.cars[0]);
-
-
-        //
+        // //
         // const carPolys = this.#extrude(this.#filter(
         //     [carPolygons]
         // ), 10);
 
         return [...buildingPolys, ...roadPolys, ...carPolys];
+    }
+
+    /**
+     * Extrude world items
+     * @param {WorldItem[]} items
+     * @param height
+     * @returns {Polygon[]}
+     */
+    #extrudeItems(items, height = 10) {
+        let visiblePolys = this.#filter(
+            items.map((b) => b.poly())
+        );
+        return this.#extrude(visiblePolys, height);
     }
 
     render(ctx, world) {
@@ -222,7 +246,6 @@ class Camera {
         );
         return subtract(p, this.drag.offset);
     };
-
 
 
     #extrudeCar(poly, carInfo, height = 15, wheelRadius = 5) {

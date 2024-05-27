@@ -28,6 +28,10 @@ class Road extends WorldItem {
             Math.min(laneIndex, this.laneCount - 1) * laneWidth;
     }
 
+    poly() {
+        return new Polygon([this.p1, this.p2]);
+    }
+
     draw(ctx) {
         ctx.lineWidth = 5;
         ctx.strokeStyle = "white";

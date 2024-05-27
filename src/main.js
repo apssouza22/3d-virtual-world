@@ -51,7 +51,7 @@ function animate(time) {
         .map((s) => [s.border.p1, s.border.p2]);
 
     const viewPoint = scale(viewport.getOffset(), -1);
-    const regScaler = showGrid ? 1 : 2;
+    const regScaler = 2;
     const regionWidth = carCanvas.width * regScaler;
     const regionHeight = carCanvas.height * regScaler;
     const activeRegion = new Polygon([

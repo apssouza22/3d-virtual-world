@@ -1,4 +1,4 @@
-const openMapData = {
+const myMap = {
     "version": 0.6,
     "generator": "Overpass API 0.7.62.1 084b4234",
     "osm3s": {

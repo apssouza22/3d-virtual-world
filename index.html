@@ -64,20 +64,6 @@
     <script src="src/camera.js"></script>
 
     <script>
-        // const roads = Osm.parseRoads(openMapData);
-        const buildings = Osm.parseBuildings(dublinBuildings);
-        const waters = Osm.parseWaters(dublinWater);
-
-
-        console.log("buildings", buildings);
-        console.log("waters", waters);
-        console.log("world", worldData);
-        worldData.water = waters;
-
-        // worldData.offset = { x: -4356, y: -7382 };
-        // worldData.water = waters;
-        // worldData.markings = [];
-
         const world = World.load(worldData);
         // const world = createAndSaveWorld();
 
@@ -136,6 +122,7 @@
         }
         function createAndSaveWorld() {
             console.log("saving world data");
+            const roads = Osm.parseRoads(myMap);
             /** @type {World} */
             const world = new World(roads);
             const element = document.createElement("a");

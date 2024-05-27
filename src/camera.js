@@ -158,7 +158,6 @@ class Camera {
      * */
     #getExtrudedItems(world) {
         const buildingPolys = this.#extrudeItems(world.buildings, 200);
-        //copy cars
         const cars = [...world.cars]
         const firstCar = cars.shift()
 

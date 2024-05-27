@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<canvas id="scene"></canvas>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js" integrity="sha512-7eHRwcbYkK4d9g/6tD/mhkf++eoTHwpNM9woBxtPUBWm67zeAfFC+HrdoE2GanKeocly/VxeLvIqwvCdk7qScg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="utils.js"></script>
+<script src="primitives/point.js"></script>
+<script>
+    console.clear();
+
+    // Get the canvas element from the DOM
+    const canvas = document.getElementById('scene');
+    canvas.width = canvas.clientWidth;
+    canvas.height = canvas.clientHeight;
+    // Store the 2D context
+    const ctx = canvas.getContext('2d');
+
+    if (window.devicePixelRatio > 1) {
+        canvas.width = canvas.clientWidth * 2;
+        canvas.height = canvas.clientHeight * 2;
+        ctx.scale(2, 2);
+    }
+
+
+    function getTexture(emoji) {
+        const tempCanvas = document.createElement("canvas");
+        const tempCtx = tempCanvas.getContext("2d");
+        tempCanvas.width = 60;
+        tempCanvas.height = 60;
+        tempCtx.textAlign = 'center';
+        tempCtx.textBaseline = 'middle';
+        tempCtx.font = '54px serif';
+        tempCtx.fillText(emoji, 30, 35);
+        return tempCanvas;
+    }
+
+    const textures = [getTexture('🦊'), getTexture('🦓'), getTexture('🐹'), getTexture('🐨')];
+
+    /* ====================== */
+    /* ====== VARIABLES ===== */
+    /* ====================== */
+    let width = canvas.offsetWidth; // Width of the canvas
+    let height = canvas.offsetHeight; // Height of the canvas
+    const dots = []; // Every dots in an array
+
+    /* ====================== */
+    /* ====== CONSTANTS ===== */
+    /* ====================== */
+    /* Some of those constants may change if the user resizes their screen but I still strongly believe they belong to the Constants part of the variables */
+    let DOTS_AMOUNT = Math.min(width, height); // Amount of dots on the screen
+    const DOT_RADIUS = 20; // Radius of the dots
+    let GLOBE_RADIUS = Math.min(width, height) * 0.8;
+
+    class Dot {
+        constructor() {
+            this.theta = Math.random() * 2 * Math.PI; // Random value between [0, 2Pi]
+            this.phi = Math.acos((Math.random() * 2) - 1); // Random value between [0, Pi]
+
+            this.texture = textures[Math.floor(Math.random() * textures.length)];
+
+            // Calculate the [x, y, z] coordinates of the dot along the globe
+            this.x = 0;
+            this.y = 0;
+            this.z = 0;
+
+            this.radius = Math.random() * (GLOBE_RADIUS * 0.2) + (GLOBE_RADIUS * 0.8);
+
+            this.xProjected = 0;
+            this.yProjected = 0;
+            this.scaleProjected = 0;
+            const self = this;
+            setTimeout(() => {
+                console.log("setting interval")
+                self.theta = this.theta + Math.PI * 2;
+            }, 100);
+            // TweenMax.to(this, 40, {
+            //     theta: this.theta + Math.PI * 2,
+            //     repeat: -1,
+            //     ease: Power0.easeNone
+            // });
+        }
+
+        // Do some math to project the 3D position into the 2D canvas
+        project(viewport) {
+            this.x = this.radius * Math.sin(this.phi) * Math.cos(this.theta);
+            this.y = this.radius * Math.cos(this.phi);
+            this.z = this.radius * Math.sin(this.phi) * Math.sin(this.theta) + this.radius;
+
+            // The scaleProjected will store the scale of the element based on its distance from the 'camera'
+            this.scaleProjected = viewport.zoom / (viewport.zoom + this.z);
+            // The xProjected is the x position on the 2D world
+            this.xProjected = (this.x * this.scaleProjected) + viewport.center.x;
+            // The yProjected is the y position on the 2D world
+            this.yProjected = (this.y * this.scaleProjected) + viewport.center.y;
+        }
+
+        /**
+         * We draw the image based on the projected coordinates and scale
+         */
+        draw() {
+            // We define the opacity of our element based on its distance
+            ctx.globalAlpha = Math.abs(1 - this.z / width);
+            // this.theta = scale(viewport.getOffset(), -1).x / canvas.width * 2 * Math.PI;
+            // this.theta = this.theta + (scale(viewport.getOffset(), -1).x  * 0.01);
+            if (viewport.drag.active)
+                this.theta = scale(viewport.getOffset(), -1).x / canvas.width * 2 * Math.PI;
+
+            this.theta = this.theta + 0.01;
+            ctx.drawImage(
+                this.texture,
+                this.xProjected - DOT_RADIUS,
+                this.yProjected - DOT_RADIUS,
+                DOT_RADIUS * 2 * this.scaleProjected,
+                DOT_RADIUS * 2 * this.scaleProjected
+            )
+        }
+    }
+
+    class Viewport {
+        constructor(
+            canvas,
+            zoom = 1,
+            offset = null,
+        ) {
+            this.canvas = canvas;
+            this.ctx = canvas.getContext("2d");
+
+            this.maxZoom = 10000;
+            this.zoom = Math.min(zoom, this.maxZoom);
+            this.center = new Point(canvas.width / 2, canvas.height / 2);
+            this.offset = offset ? offset : scale(this.center, -1);
+
+            this.drag = {
+                start: new Point(0, 0),
+                end: new Point(0, 0),
+                offset: new Point(0, 0),
+                active: false,
+            };
+
+            this.#addPanEventListeners();
+            this.#addZoomEventListeners();
+        }
+
+        getMouse(evt, subtractDragOffset = false) {
+            const p = new Point(
+                (evt.offsetX - this.center.x) * this.zoom - this.offset.x,
+                (evt.offsetY - this.center.y) * this.zoom - this.offset.y,
+                0,
+                false
+            );
+            return subtractDragOffset ? subtract(p, this.drag.offset) : p;
+        }
+
+        getOffset() {
+            return add(this.offset, this.drag.offset, false);
+        }
+
+        #addPanEventListeners() {
+            console.log("adding pan event listeners")
+            this.canvas.addEventListener("mousedown", this.#handleMouseDown.bind(this));
+            this.canvas.addEventListener("mousemove", this.#handleMouseMove.bind(this));
+            this.canvas.addEventListener("mouseup", this.#handleMouseUp.bind(this));
+        }
+
+        #addZoomEventListeners() {
+            this.canvas.addEventListener("mousewheel", this.#handleMouseWheel.bind(this));
+        }
+
+        #handleMouseDown(evt) {
+            this.drag.start = this.getMouse(evt);
+            this.drag.active = true;
+        }
+
+        #handleMouseMove(evt) {
+            if (this.drag.active) {
+                console.log("moving mouse", this.drag.offset)
+                this.drag.end = this.getMouse(evt);
+                this.drag.offset = subtract(this.drag.end, this.drag.start);
+            }
+        }
+
+        #handleMouseUp(evt) {
+            if (this.lerpStep < this.lerpSteps) {
+                return;
+            }
+            if (this.drag.active) {
+                this.offset = add(this.offset, this.drag.offset);
+                this.drag = {
+                    start: new Point(0, 0),
+                    end: new Point(0, 0),
+                    offset: new Point(0, 0),
+                    active: false,
+                };
+            }
+        }
+
+        #handleMouseWheel(evt) {
+            if (this.lerpStep < this.lerpSteps) {
+                return;
+            }
+            const dir = Math.sign(evt.deltaY);
+            const step = 1;
+            this.zoom += dir * step;
+            this.zoom = Math.max(1, Math.min(this.maxZoom, this.zoom));
+        }
+    }
+
+
+    function createDots() {
+        // Empty the array of dots
+        dots.length = 0;
+
+        // Create a new dot based on the amount needed
+        for (let i = 0; i < DOTS_AMOUNT; i++) {
+            // Create a new dot and push it into the array
+            dots.push(new Dot());
+        }
+    }
+
+    /* ====================== */
+    /* ======== RENDER ====== */
+    /* ====================== */
+    function render() {
+        // Clear the scene
+        ctx.clearRect(0, 0, width, height);
+
+        // Loop through the dots array and project every dot
+        for (let i = 0; i < dots.length; i++) {
+            dots[i].project(viewport);
+        }
+
+        // Sort dots array based on their projected size
+        dots.sort((dot1, dot2) => {
+            return dot1.scaleProjected - dot2.scaleProjected;
+        });
+
+        // Loop through the dots array and draw every dot
+        for (var i = 0; i < dots.length; i++) {
+            dots[i].draw(viewport);
+        }
+
+        window.requestAnimationFrame(render);
+    }
+
+    const viewport = new Viewport(canvas, 100);
+    // Populate the dots array with random dots
+    createDots();
+
+    // Render the scene
+    window.requestAnimationFrame(render);
+</script>
+</body>
+</html>

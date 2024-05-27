@@ -1,5 +1,11 @@
 # Virutal world in JavaScript from scratch
 
+A virtual world in JavaScript from scratch. 
+This project try to simulate a virtual world similar to google maps using only vanilla JavaScript. 
+The project offer the top view of the world and the 3D view of the world(street view like).  
+
+<img src="virtual-world.png">
+
 ## generate the map from your location
  - Access https://overpass-turbo.eu/
  - Query 

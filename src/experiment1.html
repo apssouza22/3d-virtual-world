@@ -31,13 +31,6 @@
     // Store the 2D context
     const ctx = canvas.getContext('2d');
 
-    if (window.devicePixelRatio > 1) {
-        canvas.width = canvas.clientWidth * 2;
-        canvas.height = canvas.clientHeight * 2;
-        ctx.scale(2, 2);
-    }
-
-
     function getTexture(emoji) {
         const tempCanvas = document.createElement("canvas");
         const tempCtx = tempCanvas.getContext("2d");
@@ -84,11 +77,6 @@
             this.xProjected = 0;
             this.yProjected = 0;
             this.scaleProjected = 0;
-            // TweenMax.to(this, 40, {
-            //     theta: this.theta + Math.PI * 2,
-            //     repeat: -1,
-            //     ease: Power0.easeNone
-            // });
         }
 
         // Do some math to project the 3D position into the 2D canvas

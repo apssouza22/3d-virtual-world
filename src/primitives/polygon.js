@@ -178,12 +178,12 @@ class Polygon {
     }
 
     draw(ctx,
-        {
-            stroke = "blue",
-            lineWidth = 2,
-            fill = "rgba(0,0,255,0.3)",
-            join = "miter",
-        } = {}
+         {
+             stroke = "blue",
+             lineWidth = 2,
+             fill = "rgba(0,0,255,0.3)",
+             join = "miter",
+         } = {}
     ) {
         if (this.points.length < 2) {
             return;

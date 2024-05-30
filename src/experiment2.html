@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D demo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<script src="utils.js"></script>
+<script src="primitives/point.js"></script>
+<script src="primitives/segment.js"></script>
+<script src="primitives/polygon.js"></script>
+<script src="myviewport.js"></script>
+<script>
+    //https://www.youtube.com/watch?v=eoXn6nwV694
+    const bottom = new Polygon([
+        new Point(-0.5, 0.5, -0.5),
+        new Point(0.5, 0.5, -0.5),
+        new Point(0.5, 0.5, 0.5),
+        new Point(-0.5, 0.5, 0.5),
+    ]);
+    const topSid = new Polygon([
+        new Point(-0.5, -0.5, -0.5),
+        new Point(0.5, -0.5, -0.5),
+        new Point(0.5, -0.5, 0.5),
+        new Point(-0.5, -0.5, 0.5),
+    ]);
+    const front = new Polygon([
+        new Point(-0.5, -0.5, 0.5),
+        new Point(0.5, -0.5, 0.5),
+        new Point(0.5, 0.5, 0.5),
+        new Point(-0.5, 0.5, 0.5),
+    ]);
+    const back = new Polygon([
+        new Point(-0.5, -0.5, -0.5),
+        new Point(0.5, -0.5, -0.5),
+        new Point(0.5, 0.5, -0.5),
+        new Point(-0.5, 0.5, -0.5)
+    ]);
+    const FACES = [bottom, topSid, back, front];
+
+    const WIDTH = 1000;
+    const HEIGHT = 1000;
+    const CAMERA_DISTANCE = 10;
+    const FIELD_OF_VIEW_ANGLE = 45; // Camera zoom level
+
+    const c = document.createElement("canvas");
+    c.width = WIDTH;
+    c.height = HEIGHT;
+    const ctx = c.getContext("2d");
+    document.body.append(c);
+    const viewPort = new Viewport(c, FIELD_OF_VIEW_ANGLE)
+
+    // Scaling the x and y coordinates based on the z-coordinate and the field of view angle(Camera zoom)
+    function transform2DTo3D(xy, z) {
+        const angleRadians = (viewPort.zoom / 180) * Math.PI;
+        return xy / (z * Math.tan(angleRadians / 2));
+    }
+
+    function draw(mouseX, mouseY) {
+        ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+        // Multiplies the ratios by Math.PI to convert it to radians
+        const mouseXratio = (mouseX / WIDTH) * Math.PI;
+        const mouseYratio = (mouseY / HEIGHT) * Math.PI;
+
+        const faces2D = FACES.map((poly) => {
+                let points = poly.points
+                    .map((p) => rotate3D(p, mouseYratio, mouseXratio, 0))
+                    .map(({x, y, z}) => ({x: x, y: y, z: z + CAMERA_DISTANCE}))
+                    .map(({x, y, z}) => ({
+                        x: transform2DTo3D(x, z),
+                        y: transform2DTo3D(y, z),
+                    }))
+                    // This line scales and translates the 2D points to fit within the canvas. The points are first scaled by the width and height of the canvas, then they are translated by half the width and height to move the origin from the top-left corner of the canvas to the center.
+                    .map(({x, y}) => ({
+                        x: x * WIDTH + WIDTH / 2,
+                        y: y * HEIGHT + HEIGHT / 2,
+                    }))
+                    .map(({x, y}) => new Point(x, y));
+                return new Polygon(points);
+            }
+        );
+        let i = 0;
+        for (const face of faces2D) {
+            face.draw(ctx);
+            i++;
+        }
+    }
+
+    draw(0, 0);
+
+
+    // https://en.wikipedia.org/wiki/Rotation_matrix#General_rotations
+    function rotate3D(point, roll, pitch, yaw) {
+        /*
+        [cos(y)*cos(p), cos(y)*sin(p)*sin(r)-sin(y)*cos(r), cos(y)*sin(p)*cos(r)+sin(y)*sin(r)]
+        [sin(y)*cos(p), sin(y)*sin(p)*sin(r)+cos(y)*cos(r), sin(y)*sin(p)*cos(r)-cos(y)*sin(r)]
+        [   -sin(p),               cos(p)*sin(r),                     cos(p)*cos(r)           ]
+       */
+
+        return {
+            x:
+                Math.cos(yaw) * Math.cos(pitch) * point.x +
+                (Math.cos(yaw) * Math.sin(pitch) * Math.sin(roll) - Math.sin(yaw) * Math.cos(roll)) *
+                point.y +
+                (Math.cos(yaw) * Math.sin(pitch) * Math.cos(roll) + Math.sin(yaw) * Math.sin(roll)) *
+                point.z,
+            y:
+                Math.sin(yaw) * Math.cos(pitch) * point.x +
+                (Math.sin(yaw) * Math.sin(pitch) * Math.sin(roll) + Math.cos(yaw) * Math.cos(roll)) *
+                point.y +
+                (Math.sin(yaw) * Math.sin(pitch) * Math.cos(roll) - Math.cos(yaw) * Math.sin(roll)) *
+                point.z,
+            z: -Math.sin(pitch) * point.x +
+                Math.cos(pitch) * Math.sin(roll) * point.y +
+                Math.cos(pitch) * Math.cos(roll) * point.z,
+        };
+    }
+
+    viewPort.update((mouseX, mouseY) => draw(mouseX, mouseY));
+
+</script>
+</body>
+</html>

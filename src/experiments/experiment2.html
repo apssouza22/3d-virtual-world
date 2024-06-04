@@ -16,10 +16,10 @@
     </style>
 </head>
 <body>
-<script src="utils.js"></script>
-<script src="primitives/point.js"></script>
-<script src="primitives/segment.js"></script>
-<script src="primitives/polygon.js"></script>
+<script src="../utils.js"></script>
+<script src="../primitives/point.js"></script>
+<script src="../primitives/segment.js"></script>
+<script src="../primitives/polygon.js"></script>
 <script src="myviewport.js"></script>
 <script>
     //https://www.youtube.com/watch?v=eoXn6nwV694
@@ -49,12 +49,12 @@
     ]);
     const FACES = [bottom, topSid, back, front];
 
-    const WIDTH = 1000;
-    const HEIGHT = 1000;
     const CAMERA_DISTANCE = 10;
     const FIELD_OF_VIEW_ANGLE = 45; // Camera zoom level
 
     const c = document.createElement("canvas");
+    const HEIGHT = 1000;
+    const WIDTH = 1000;
     c.width = WIDTH;
     c.height = HEIGHT;
     const ctx = c.getContext("2d");

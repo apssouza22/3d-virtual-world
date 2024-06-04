@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D demo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+        canvas {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script src="matrix_functions.js"></script>
+<script src="camera.js"></script>
+<script src="object3d.js"></script>
+<script src="projection.js"></script>
+<script>
+
+    class SoftwareRender {
+        constructor() {
+            this.RES = [800, 800];
+            this.WIDTH = this.RES[0];
+            this.HEIGHT = this.RES[1];
+            this.HALF_WIDTH = this.WIDTH / 2;
+            this.HALF_HEIGHT = this.HEIGHT / 2;
+            this.canvas = document.getElementById("canvas");
+            this.canvas.width = this.WIDTH;
+            this.canvas.height = this.HEIGHT;
+            this.ctx = this.canvas.getContext('2d');
+            this.createObjects();
+        }
+
+        createObjects() {
+            this.camera = new Camera3d(this, new CameraPosition(0.5, 1, -4));
+            this.projection = new Projection(this);
+            this.object = this.getObjectFromFile('resources/t_34_obj.obj');
+            this.object.rotateY(-Math.PI / 4);
+        }
+
+        /**
+         * @param {string} filename
+         * @return {Object3D}
+         */
+        getObjectFromFile(filename) {
+            let vertices = [
+                [0, 0, 0, 1], [0, 1, 0, 1], [1, 1, 0, 1], [1, 0, 0, 1],
+                [0, 0, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1],
+            ];
+            let faces = [
+                [0, 1, 2, 3], [4, 5, 6, 7], [0, 4, 5, 1], [2, 3, 7, 6],[1,2,6,5],[0,3,7,4]
+            ];
+            return new Object3D(this, vertices, faces);
+        }
+
+        draw() {
+            this.ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
+            this.object.draw();
+        }
+
+        run(fn) {
+            const loop = () => {
+                // fn();
+                this.draw();
+                requestAnimationFrame(loop);
+            };
+            loop();
+        }
+    }
+
+    const render = new SoftwareRender();
+    render.run((x, y) => {
+        console.log(x, y)
+    });
+
+</script>
+</body>
+</html>

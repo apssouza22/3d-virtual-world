@@ -10,6 +10,9 @@
  * @returns {number[][]}
  */
 function matMulti(matrixA, matrixB) {
+    if (typeof matrixA === 'number') {
+        return matrixB.map(value => matrixA * value);
+    }
     // If matrixA is a one-dimensional array, convert it to a 2D array with one row
     if (!Array.isArray(matrixA[0])) {
         matrixA = [matrixA];
@@ -35,19 +38,26 @@ function matMulti(matrixA, matrixB) {
     return result;
 }
 
+
 function add(matrixA, matrixB) {
-    // If matrixA is a one-dimensional array, convert it to a 2D array with one row
-    if (!Array.isArray(matrixA[0])) {
-        matrixA = [matrixA];
+    // Check if both inputs are one-dimensional arrays
+    if (!Array.isArray(matrixA[0]) && !Array.isArray(matrixB[0])) {
+        if (matrixA.length !== matrixB.length) {
+            throw new Error("Cannot subtract these arrays: they must be of the same length.");
+        }
+        // Perform the subtraction
+        return matrixA.map((value, index) => value + matrixB[index]);
     }
-    if (matrixA[0].length !== matrixB.length && matrixA.length !== matrixB[0].length) {
-        throw new Error("Cannot multiply these matrices: column count of first matrix must match row count of second matrix.");
+
+    // Check if both matrices have the same dimensions
+    if (matrixA.length !== matrixB.length || matrixA[0].length !== matrixB[0].length) {
+        throw new Error("Cannot subtract these matrices: they must be of the same dimensions.");
     }
 
     // Initialize the result matrix with the same dimensions
     const result = new Array(matrixA.length);
 
-    // Perform the addition
+    // Perform the subtraction
     for (let i = 0; i < matrixA.length; i++) {
         result[i] = new Array(matrixA[i].length);
         for (let j = 0; j < matrixA[i].length; j++) {
@@ -59,10 +69,15 @@ function add(matrixA, matrixB) {
 }
 
 function subtract(matrixA, matrixB) {
-    // If matrixA is a one-dimensional array, convert it to a 2D array with one row
-    if (!Array.isArray(matrixA[0])) {
-        matrixA = [matrixA];
+    // Check if both inputs are one-dimensional arrays
+    if (!Array.isArray(matrixA[0]) && !Array.isArray(matrixB[0])) {
+        if (matrixA.length !== matrixB.length) {
+            throw new Error("Cannot subtract these arrays: they must be of the same length.");
+        }
+        // Perform the subtraction
+        return matrixA.map((value, index) => value - matrixB[index]);
     }
+
     // Check if both matrices have the same dimensions
     if (matrixA.length !== matrixB.length || matrixA[0].length !== matrixB[0].length) {
         throw new Error("Cannot subtract these matrices: they must be of the same dimensions.");

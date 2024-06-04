@@ -39,6 +39,7 @@
         createObjects() {
             this.camera = new Camera3d(this, new CameraPosition(0.5, 1, -4));
             this.projection = new Projection(this);
+            /** @type {Object3D} **/
             this.object = this.getObjectFromFile('resources/t_34_obj.obj');
             this.object.rotateY(-Math.PI / 4);
         }

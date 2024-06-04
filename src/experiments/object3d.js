@@ -12,17 +12,17 @@ class Object3D {
         this.faces = faces;
         this.translate([0.0001, 0.0001, 0.0001]);
 
-        this.colorFaces = this.faces.map(face => ({color: 'blue', face}));
+        this.colorFaces = this.faces.map(face => ({color: 'red', face}));
         this.movementFlag = true;
         this.drawVertices = true;
     }
 
     draw() {
         this.screenProjection();
-        this.movement();
+        this.move();
     }
 
-    movement() {
+    move() {
         if (this.movementFlag) {
             this.rotateY(-(Date.now() % 0.005));
             this.rotateX(-(Date.now() % 0.005));
@@ -50,30 +50,42 @@ class Object3D {
      * @returns {boolean}
      */
     #isWithinScreen(vertices) {
+        return true;
+        // Check if all the vertices are within the screen [-1, 1]
         return vertices.every(vertex => vertex[0] > 0 &&
             vertex[0] < this.render.WIDTH
             && vertex[1] > 0 && vertex[1] < this.render.HEIGHT
         );
     }
 
+    /**
+     * Project the 3D object to the 2D screen
+     *
+     * @returns {void}
+     */
     screenProjection() {
-        let vertices = matMulti(this.vertices, this.render.camera.cameraMatrix());
-        vertices = matMulti(vertices, this.render.projection.projectionMatrix);
+        let vertices = matMulti(this.vertices, this.render.camera.getCameraStateMatrix());
+        // Project the vertices to the 2D screen
+        vertices = matMulti(vertices, this.render.projection.get2DProjectionMatrix());
         vertices = this.#homogeneousDivision(vertices);
-        vertices = vertices.map(value => value > 1 || value < -1 ? 0 : value);
+        vertices = vertices.map(value => value > 2 || value < -2 ? 0 : value);
         // Denormalize the vertices to the screen size
-        vertices = matMulti(vertices, this.render.projection.toScreenMatrix);
+        vertices = matMulti(vertices, this.render.projection.getScreenDenormalizeMatrix());
 
         for (let i = 0; i < vertices.length; i++) {
             // Remove the z and homogeneous coordinate. We only need the x and y coordinates.
             vertices[i] = vertices[i].slice(0, 2);
         }
+        this.#draw(vertices);
+    }
+
+    #draw(vertices) {
         const self = this;
         this.colorFaces.forEach(({color, face}) => {
             const polygon = face.map(index => vertices[index]);
 
             if (this.#isWithinScreen(polygon)) {
-                this.render.ctx.fillStyle = "blue";
+                this.render.ctx.strokeStyle = color;
                 this.render.ctx.beginPath();
                 let x = polygon[0][0];
                 let y = polygon[0][1];
@@ -91,8 +103,7 @@ class Object3D {
                 if (vertex !== this.render.HALF_WIDTH && vertex !== this.render.HALF_HEIGHT) {
                     this.render.ctx.beginPath();
                     this.render.ctx.arc(vertex[0], vertex[1], 4, 0, Math.PI * 2);
-                    this.render.ctx.fillStyle = '#555';
-                    //Help me to increase the size of the vertices
+                    this.render.ctx.fillStyle = '#777';
                     this.render.ctx.lineWidth = 2;
                     this.render.ctx.fill();
                     this.render.ctx.stroke();
@@ -101,6 +112,10 @@ class Object3D {
         }
     }
 
+    /**
+     * Translate the object to a new position
+     * @param pos
+     */
     translate(pos) {
         this.vertices = matMulti(this.vertices, translate(pos));
     }

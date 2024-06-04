@@ -5,6 +5,7 @@ class CameraPosition{
         this.z = z;
     }
 }
+
 class Camera3d {
 
     /**
@@ -14,16 +15,17 @@ class Camera3d {
      */
     constructor(render, position) {
         this.position = [position.x, position.y, position.z, 1.0];
-        this.forward = [0, 0, 1, 1];
-        this.up = [0, 1, 0, 1];
-        this.right = [1, 0, 0, 1];
+        this.forward = [0, 0, 1, 1]; // The direction the camera is facing
+        this.up = [0, 1, 0, 1]; // The direction of the top of the camera
+        this.right = [1, 0, 0, 1]; // The direction of the right of the camera
+
         // FOV = Field of View - the angle of the camera
         this.horizontalFov = Math.PI / 3; // 60 degrees
         this.verticalFov = this.horizontalFov * (render.HEIGHT / render.WIDTH);
         this.nearPlane = 0.1;
         this.farPlane = 100;
-        this.moving_speed = 0.3;
-        this.rotation_speed = 0.015;
+        this.moving_speed = 0.5;
+        this.rotation_speed = 0.02;
 
         this.anglePitch = 0;
         this.angleYaw = 0;
@@ -33,37 +35,36 @@ class Camera3d {
     }
 
     control(event) {
-        console.log(event.code);
         switch (event.code) {
             case 'KeyA':
-                this.position = subtract(this.position, scale(this.right, this.moving_speed))[0];
+                this.position = subtract(this.position, matMulti(this.moving_speed, this.right));
                 break;
             case 'KeyD':
-                this.position = add(this.position, scale(this.right, this.moving_speed))[0];
+                this.position = add(this.position, matMulti(this.moving_speed, this.right));
                 break;
             case 'KeyW':
-                this.position = add(this.position, scale(this.forward, this.moving_speed))[0];
+                this.position = add(this.position, matMulti(this.moving_speed, this.forward));
                 break;
             case 'KeyS':
-                this.position = subtract(this.position, scale(this.forward, this.moving_speed))[0];
+                this.position = subtract(this.position, matMulti(this.moving_speed, this.forward));
                 break;
             case 'KeyQ':
-                this.position = add(this.position, scale(this.up, this.moving_speed))[0];
+                this.position = add(this.position, matMulti(this.moving_speed, this.up));
                 break;
             case 'KeyE':
-                this.position = subtract(this.position, scale(this.up, this.moving_speed))[0];
+                this.position = subtract(this.position, matMulti(this.moving_speed, this.up));
                 break;
             case 'ArrowLeft':
-                this.camera_yaw(-this.rotation_speed);
+                this.cameraYaw(-this.rotation_speed);
                 break;
             case 'ArrowRight':
-                this.camera_yaw(this.rotation_speed);
+                this.cameraYaw(this.rotation_speed);
                 break;
             case 'ArrowUp':
-                this.camera_pitch(-this.rotation_speed);
+                this.cameraPitch(-this.rotation_speed);
                 break;
             case 'ArrowDown':
-                this.camera_pitch(this.rotation_speed);
+                this.cameraPitch(this.rotation_speed);
                 break;
         }
     }
@@ -72,7 +73,7 @@ class Camera3d {
      * Move the camera forward or backward
      * @param angle
      */
-    camera_yaw(angle) {
+    cameraYaw(angle) {
         this.angleYaw += angle;
     }
 
@@ -80,30 +81,30 @@ class Camera3d {
      * Move the camera up or down
      * @param angle
      */
-    camera_pitch(angle) {
+    cameraPitch(angle) {
         this.anglePitch += angle;
     }
 
-    axiIdentity() {
-        this.forward = [0, 0, 1, 1];
-        this.up = [0, 1, 0, 1];
-        this.right = [1, 0, 0, 1];
+    initializeDirection() {
+        this.forward = [0, 0, 1, 1]; // The direction the camera is facing
+        this.up = [0, 1, 0, 1]; // The direction of the top of the camera
+        this.right = [1, 0, 0, 1]; // The direction of the right of the camera
     }
 
-    camera_update_axii() {
+    cameraUpdateDirection() {
         let rotate = matMulti(rotateX(this.anglePitch), rotateY(this.angleYaw));
-        this.axiIdentity();
+        this.initializeDirection();
         this.forward = matMulti(this.forward, rotate)[0];
         this.right = matMulti(this.right, rotate)[0];
         this.up = matMulti(this.up, rotate)[0];
     }
 
     /***
-     *
+     * Get the camera state matrix
      * @returns {number[][]}
      */
-    cameraMatrix() {
-        this.camera_update_axii();
+    getCameraStateMatrix() {
+        this.cameraUpdateDirection();
         return matMulti(this.translate_matrix(), this.rotate_matrix());
     }
 

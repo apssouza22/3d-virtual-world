@@ -5,15 +5,16 @@ class Object3D {
      * @param {Render3D} render
      * @param vertices
      * @param faces
+     * @param materials
      */
-    constructor(render, vertices = [], faces = []) {
+    constructor(render, vertices = [], faces = [], materials = []) {
         this.render = render;
         this.vertices = vertices;
         this.faces = faces;
+        this.materials = materials;
         this.translate([0.0001, 0.0001, 0.0001]);
 
-        this.colorFaces = this.faces.map(face => ({color: 'red', face}));
-        this.movementFlag = false;
+        this.movementFlag = true;
         this.drawVertices = true;
     }
 
@@ -86,6 +87,10 @@ class Object3D {
     }
 
     #draw(vertices) {
+        let drawer = new Drawer(canvas, this.vertices, this.faces, this.materials);
+        drawer.draw(true, this.render.ctx);
+        return
+
         const self = this;
         this.colorFaces.forEach(({color, face}) => {
             const polygon = face.map(index => vertices[index]);

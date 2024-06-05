@@ -35,6 +35,7 @@ class Camera3d {
     }
 
     control(event) {
+        console.log(event.code)
         switch (event.code) {
             case 'KeyA':
                 this.position = subtract(this.position, matMulti(this.moving_speed, this.right));

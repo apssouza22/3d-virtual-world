@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D demo</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script src="../primitives/point.js"></script>
+
+<script src="obj_reader.js"></script>
+<script src="data_preparation.js"></script>
+<script src="matrix_functions.js"></script>
+<script src="mouse_control.js"></script>
+<script src="camera.js"></script>
+<script src="object3d.js"></script>
+<script src="projection.js"></script>
+<script>
+
+    class Render3D {
+        constructor() {
+            this.RES = [1600, 900];
+            this.WIDTH = this.RES[0];
+            this.HEIGHT = this.RES[1];
+            this.HALF_WIDTH = this.WIDTH / 2;
+            this.HALF_HEIGHT = this.HEIGHT / 2;
+            this.canvas = document.getElementById("canvas");
+            this.canvas.width = this.WIDTH;
+            this.canvas.height = this.HEIGHT;
+            this.ctx = this.canvas.getContext('2d');
+            this.mouseControl = new MouseControl(this.canvas);
+            this.createObjects();
+        }
+
+        createObjects() {
+            this.camera = new Camera3d(this, new CameraPosition(-5, 6, -55));
+            this.projection = new Projection(this);
+            /** @type {Object3D} **/
+            this.object = this.getObjectFromFile('resources/t_34_obj.obj');
+            this.object.rotateY(-Math.PI / 4);
+        }
+
+        /**
+         * @param {string} file
+         * @return {Object3D}
+         */
+        getObjectFromFile(file) {
+            file = "obj/rainbow.obj"
+            let objectReader = new ObjectReader(canvas);
+            const objData = objectReader.readObjFile(file);
+
+
+            const mtlData = objectReader.readMtlFile(file);
+            let material = mtlData.material;
+            const dataHandler = new DataHandler(canvas);
+            objData.vert = dataHandler.addHomogeneous(objData.vert)
+            objData.vert = dataHandler.scale(objData)
+
+            let faces = dataHandler.sortFaces(objData.face, objData.vert);
+
+            let totalMaterial = material.length;
+            let hasMtl = mtlData.hasMtl;
+            let totalVert = objData.vert.length;
+            let totalFace = faces.length;
+            return new Object3D(this, objData.vert, faces, material);
+        }
+
+        draw() {
+            this.ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
+            this.object.draw();
+        }
+
+        run(fn) {
+            const loop = () => {
+                // fn();
+                this.draw();
+                requestAnimationFrame(loop);
+            };
+            loop();
+        }
+    }
+
+    const render = new Render3D();
+    render.run((x, y) => {
+        console.log(x, y)
+    });
+
+</script>
+</body>
+</html>

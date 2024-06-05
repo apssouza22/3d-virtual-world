@@ -55,6 +55,8 @@
     const c = document.createElement("canvas");
     const HEIGHT = 1000;
     const WIDTH = 1000;
+    const HALF_WIDTH = WIDTH / 2;
+    const HALF_HEIGHT = HEIGHT / 2;
     c.width = WIDTH;
     c.height = HEIGHT;
     const ctx = c.getContext("2d");
@@ -62,32 +64,36 @@
     const viewPort = new Viewport(c, FIELD_OF_VIEW_ANGLE)
 
     // Scaling the x and y coordinates based on the z-coordinate and the field of view angle(Camera zoom)
-    function transform2DTo3D(xy, z) {
+    function transform3DTo2D(xy, z) {
         const angleRadians = (viewPort.zoom / 180) * Math.PI;
         return xy / (z * Math.tan(angleRadians / 2));
+    }
+
+    function screenProjection(poly, roll, pitch) {
+        return poly.points
+            .map((p) => rotate3D(p, roll, pitch, 0))
+            .map(({x, y, z}) => ({x: x, y: y, z: z + CAMERA_DISTANCE}))
+            .map(({x, y, z}) => ({
+                x: transform3DTo2D(x, z),
+                y: transform3DTo2D(y, z),
+            }))
+            // This line scales and translates the 2D points to fit within the canvas. The points are first scaled by the width and height of the canvas, then they are translated by half the width and height to move the origin from the top-left corner of the canvas to the center.
+            .map(({x, y}) => ({
+                x: x * WIDTH + HALF_WIDTH,
+                y: y * HEIGHT + HALF_HEIGHT,
+            }))
+            .map(({x, y}) => new Point(x, y));
     }
 
     function draw(mouseX, mouseY) {
         ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
         // Multiplies the ratios by Math.PI to convert it to radians
-        const mouseXratio = (mouseX / WIDTH) * Math.PI;
-        const mouseYratio = (mouseY / HEIGHT) * Math.PI;
+        const roll = (mouseX / WIDTH) * Math.PI;
+        const pitch = (mouseY / HEIGHT) * Math.PI;
 
         const faces2D = FACES.map((poly) => {
-                let points = poly.points
-                    .map((p) => rotate3D(p, mouseYratio, mouseXratio, 0))
-                    .map(({x, y, z}) => ({x: x, y: y, z: z + CAMERA_DISTANCE}))
-                    .map(({x, y, z}) => ({
-                        x: transform2DTo3D(x, z),
-                        y: transform2DTo3D(y, z),
-                    }))
-                    // This line scales and translates the 2D points to fit within the canvas. The points are first scaled by the width and height of the canvas, then they are translated by half the width and height to move the origin from the top-left corner of the canvas to the center.
-                    .map(({x, y}) => ({
-                        x: x * WIDTH + WIDTH / 2,
-                        y: y * HEIGHT + HEIGHT / 2,
-                    }))
-                    .map(({x, y}) => new Point(x, y));
+                let points = screenProjection(poly, pitch, roll);
                 return new Polygon(points);
             }
         );

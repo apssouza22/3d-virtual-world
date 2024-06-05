@@ -2,7 +2,7 @@ class Projection {
 
     /**
      *
-     * @param {SoftwareRender} render
+     * @param {Render3D} render
      */
     constructor(render) {
         this.render = render;

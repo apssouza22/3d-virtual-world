@@ -10,7 +10,7 @@ class Camera3d {
 
     /**
      *
-     * @param {SoftwareRender} render
+     * @param {Render3D} render
      * @param {CameraPosition} position
      */
     constructor(render, position) {

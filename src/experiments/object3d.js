@@ -2,7 +2,7 @@ class Object3D {
 
     /**
      * Create a new 3D object
-     * @param {SoftwareRender} render
+     * @param {Render3D} render
      * @param vertices
      * @param faces
      */
@@ -13,7 +13,7 @@ class Object3D {
         this.translate([0.0001, 0.0001, 0.0001]);
 
         this.colorFaces = this.faces.map(face => ({color: 'red', face}));
-        this.movementFlag = true;
+        this.movementFlag = false;
         this.drawVertices = true;
     }
 
@@ -26,7 +26,13 @@ class Object3D {
         if (this.movementFlag) {
             this.rotateY(-(Date.now() % 0.005));
             this.rotateX(-(Date.now() % 0.005));
+            return
         }
+        // Multiplies the ratios by Math.PI to convert it to radians
+        const roll = (this.render.mouseControl.drag.offset.x / this.render.canvas.width) * Math.PI;
+        const pitch = (this.render.mouseControl.drag.offset.y / this.render.canvas.height) * Math.PI;
+        this.rotateY(roll);
+        this.rotateX(pitch);
     }
 
     /**

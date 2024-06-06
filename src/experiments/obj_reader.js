@@ -11,7 +11,9 @@ class ObjectReader {
 
     readObjFile(file) {
         let fileContent = this.#loadFileContent(file);
-        return this.#parseObjFile(fileContent);
+        let cont =  this.#parseObjFormat(fileContent);
+        let cont2 =  this.#parseObjFile(fileContent);
+        return cont2;
     }
 
 
@@ -19,7 +21,36 @@ class ObjectReader {
         const xmlHttp = new XMLHttpRequest();
         xmlHttp.open("GET", file, false);
         xmlHttp.send();
+        if (xmlHttp.status === 404) {
+            return "";
+        }
         return xmlHttp.responseText;
+    }
+
+    #parseObjFormat(data) {
+        let vertex = [];
+        let faces = [];
+        let lines = data.split('\n');
+
+        for (let line of lines) {
+            if (line.startsWith('v ')) {
+                /** @type {string[]} */
+                let values = line.split(' ').slice(1);
+                let xyz = values.map(value => parseFloat(value));
+                // xyz.push(1);
+                vertex.push(xyz);
+            } else if (line.startsWith('f')) {
+                let faces_ = line.split(' ').slice(1);
+                let intFaces = faces_.map(face_ => parseInt(face_.split('/')[0]) - 1);
+                faces.push(intFaces);
+            }
+        }
+
+        return {
+            max: 0,
+            vert: vertex,
+            face: faces
+        }
     }
 
     #parseObjFile(fileContent) {
@@ -84,15 +115,21 @@ class ObjectReader {
     }
 
     #parseMtlFile(fileContent) {
+        if (fileContent === "") {
+            return {
+                hasMtl: false,
+                material: []
+            }
+        }
         const material = [];
         fileContent = fileContent + "\n";
         let i = -1;
         let line;
         let totalMaterial = 0;
         let hasMtl = true;
-        while (fileContent.indexOf("\n") !== -1){
+        while (fileContent.indexOf("\n") !== -1) {
             line = fileContent.substring(0, fileContent.indexOf("\n"));
-            if (line.substring(0, 6) === "newmtl"){
+            if (line.substring(0, 6) === "newmtl") {
                 i = i + 1;
                 material[i] = new Array(4);
                 material[i][0] = line.substring(line.indexOf(" ") + 1);
@@ -101,7 +138,7 @@ class ObjectReader {
                 //Ka, ambient color, not implemented
                 //Ks, specular color, not implemented
             //d or TR, transparency, not now
-            else if (line.substring(0, 3) === "Kd "){
+            else if (line.substring(0, 3) === "Kd ") {
                 line = line.substring(3);
                 material[i][1] = line.substring(0, line.indexOf(" "));
                 line = line.substring(line.indexOf(" ") + 1);
@@ -112,7 +149,7 @@ class ObjectReader {
             fileContent = fileContent.substring(fileContent.indexOf("\n") + 1);
         }
         totalMaterial = material.length;
-        if (totalMaterial === 0){
+        if (totalMaterial === 0) {
             hasMtl = false;
         }
         return {

@@ -39,10 +39,13 @@
         }
 
         createObjects() {
-            this.camera = new Camera3d(this, new CameraPosition(-5, 6, -55));
+            this.camera = new Camera3d(this, new CameraPosition(0.5, 1, -20));
             this.projection = new Projection(this);
+            let file = "obj/cube.obj"
+            file = "obj/sphere.obj"
+            file = "obj/rainbow.obj"
             /** @type {Object3D} **/
-            this.object = this.getObjectFromFile('resources/t_34_obj.obj');
+            this.object = this.getObjectFromFile(file);
             this.object.rotateY(-Math.PI / 4);
         }
 
@@ -51,7 +54,7 @@
          * @return {Object3D}
          */
         getObjectFromFile(file) {
-            file = "obj/rainbow.obj"
+
             let objectReader = new ObjectReader(canvas);
             const objData = objectReader.readObjFile(file);
 
@@ -60,7 +63,7 @@
             let material = mtlData.material;
             const dataHandler = new DataHandler(canvas);
             objData.vert = dataHandler.addHomogeneous(objData.vert)
-            objData.vert = dataHandler.scale(objData)
+            // objData.vert = dataHandler.scale(objData)
 
             let faces = dataHandler.sortFaces(objData.face, objData.vert);
 

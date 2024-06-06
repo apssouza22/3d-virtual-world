@@ -1,3 +1,6 @@
+/**
+ * Projection class to handle the projection matrix using view frustum algorithm
+ */
 class Projection {
 
     /**

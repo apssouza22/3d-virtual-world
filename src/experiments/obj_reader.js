@@ -11,9 +11,7 @@ class ObjectReader {
 
     readObjFile(file) {
         let fileContent = this.#loadFileContent(file);
-        let cont =  this.#parseObjFormat(fileContent);
-        let cont2 =  this.#parseObjFile(fileContent);
-        return cont2;
+        return  this.#parseObjFormat(fileContent);
     }
 
 
@@ -31,6 +29,7 @@ class ObjectReader {
         let vertex = [];
         let faces = [];
         let lines = data.split('\n');
+        let faceColor = 'None';
 
         for (let line of lines) {
             if (line.startsWith('v ')) {
@@ -39,10 +38,17 @@ class ObjectReader {
                 let xyz = values.map(value => parseFloat(value));
                 // xyz.push(1);
                 vertex.push(xyz);
-            } else if (line.startsWith('f')) {
+                continue;
+            }
+            if (line.startsWith('f')) {
                 let faces_ = line.split(' ').slice(1);
                 let intFaces = faces_.map(face_ => parseInt(face_.split('/')[0]) - 1);
+                intFaces.push(faceColor);
                 faces.push(intFaces);
+                continue;
+            }
+            if (line.startsWith('usemtl')) {
+                faceColor = line.split(' ')[1];
             }
         }
 
@@ -53,67 +59,6 @@ class ObjectReader {
         }
     }
 
-    #parseObjFile(fileContent) {
-        let vert = []
-        let face = []
-        let line;
-        let v = 0;
-        let f = 0;
-        let m = 0;
-        let max = 0;
-        let j;
-        let dist;
-        let fac;
-        let mat = "null";
-        fileContent = fileContent + "\n";
-        while (fileContent.indexOf("\n") !== -1) {
-            line = fileContent.substring(0, fileContent.indexOf("\n"));
-            if (line.substring(0, 2) === "v ") {
-                vert[v] = new Array(3);
-                line = line.substring(2);
-                vert[v][0] = line.substring(0, line.indexOf(" "));
-                line = line.substring(line.indexOf(" ") + 1);
-                vert[v][1] = line.substring(0, line.indexOf(" "));
-                line = line.substring(line.indexOf(" ") + 1);
-                vert[v][2] = line;
-
-                dist = Math.sqrt(vert[v][0] * vert[v][0] + vert[v][1] * vert[v][1] + vert[v][2] * vert[v][2]);
-                if (dist > max) {
-                    max = dist;
-                }
-                v = v + 1;
-            } else if (line.substring(0, 2) === "f ") {
-                line = line.substring(2);
-                face[f] = [];
-                j = 0;
-                while (line.indexOf(" ") !== -1) {
-                    face[f][j] = line.substring(0, line.indexOf(" "));
-                    if (face[f][j].indexOf('/') !== -1) {
-                        face[f][j] = face[f][j].substring(0, face[f][j].indexOf('/'));
-                    }
-                    face[f][j] = face[f][j] - 1;
-                    line = line.substring(line.indexOf(" ") + 1);
-                    j = j + 1;
-                }
-                face[f][j] = line;
-                if (face[f][j].indexOf('/') !== -1) {
-                    face[f][j] = face[f][j].substring(0, face[f][j].indexOf('/'));
-                }
-                face[f][j] = face[f][j] - 1;
-                face[f][j + 1] = mat;
-                f = f + 1;
-            } else if (line.substring(0, 6) === "usemtl") {
-                mat = line.substring(7);
-            }
-            fileContent = fileContent.substring(fileContent.indexOf("\n") + 1);
-        }
-        return {
-            max: max,
-            vert: vert,
-            face: face
-        }
-    }
-
     #parseMtlFile(fileContent) {
         if (fileContent === "") {
             return {
@@ -121,41 +66,23 @@ class ObjectReader {
                 material: []
             }
         }
+        let lines = fileContent.split('\n');
         const material = [];
-        fileContent = fileContent + "\n";
-        let i = -1;
-        let line;
         let totalMaterial = 0;
         let hasMtl = true;
-        while (fileContent.indexOf("\n") !== -1) {
-            line = fileContent.substring(0, fileContent.indexOf("\n"));
-            if (line.substring(0, 6) === "newmtl") {
-                i = i + 1;
-                material[i] = new Array(4);
-                material[i][0] = line.substring(line.indexOf(" ") + 1);
+        let faceColor = 'None';
+        for (let line of lines) {
+            if (line.startsWith("newmtl")) {
+                faceColor = line.split(' ')[1]
+                continue;
             }
-                //Kd, ddifuse color, usefull
-                //Ka, ambient color, not implemented
-                //Ks, specular color, not implemented
-            //d or TR, transparency, not now
-            else if (line.substring(0, 3) === "Kd ") {
-                line = line.substring(3);
-                material[i][1] = line.substring(0, line.indexOf(" "));
-                line = line.substring(line.indexOf(" ") + 1);
-                material[i][2] = line.substring(0, line.indexOf(" "));
-                line = line.substring(line.indexOf(" ") + 1);
-                material[i][3] = line;
+            if (line.startsWith("Kd")) {
+                let lineParts = line.split(' ');
+                lineParts[0] =faceColor;
+                material.push(lineParts);
             }
-            fileContent = fileContent.substring(fileContent.indexOf("\n") + 1);
         }
-        totalMaterial = material.length;
-        if (totalMaterial === 0) {
-            hasMtl = false;
-        }
-        return {
-            hasMtl: hasMtl,
-            material: material
-        }
+        return material;
     }
 
 }

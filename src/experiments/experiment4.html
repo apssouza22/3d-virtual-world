@@ -19,6 +19,7 @@
 <script src="matrix_functions.js"></script>
 <script src="mouse_control.js"></script>
 <script src="camera.js"></script>
+<script src="object_drawer.js"></script>
 <script src="object3d.js"></script>
 <script src="projection.js"></script>
 <script>
@@ -44,6 +45,8 @@
             let file = "obj/cube.obj"
             // file = "obj/sphere.obj"
             file = "obj/rainbow.obj"
+            // file = "obj/star.obj"
+            // file = "obj/t_34_obj.obj"
             /** @type {Object3D} **/
             this.object = this.getObjectFromFile(file);
             this.object.rotateY(-Math.PI / 4);
@@ -54,23 +57,12 @@
          * @return {Object3D}
          */
         getObjectFromFile(file) {
-
             let objectReader = new ObjectReader(canvas);
             const objData = objectReader.readObjFile(file);
-
-
-            const mtlData = objectReader.readMtlFile(file);
-            let material = mtlData.material;
+            const material = objectReader.readMtlFile(file);
             const dataHandler = new ObjDataHandler(canvas);
             objData.vert = dataHandler.addHomogeneous(objData.vert)
-            // objData.vert = dataHandler.scale(objData)
-
             let faces = dataHandler.sortFaces(objData.face, objData.vert);
-
-            let totalMaterial = material.length;
-            let hasMtl = mtlData.hasMtl;
-            let totalVert = objData.vert.length;
-            let totalFace = faces.length;
             return new Object3D(this, objData.vert, faces, material);
         }
 

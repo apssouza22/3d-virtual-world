@@ -16,6 +16,8 @@
 </head>
 <body>
 <canvas id="canvas"></canvas>
+<script src="obj_reader.js"></script>
+<script src="data_preparation.js"></script>
 <script src="../primitives/point.js"></script>
 <script src="matrix_functions.js"></script>
 <script src="mouse_control.js"></script>
@@ -43,7 +45,7 @@
             this.camera = new Camera3d(this, new CameraPosition(0.5, 1, -4));
             this.projection = new Projection(this);
             /** @type {Object3D} **/
-            this.object = this.getObjectFromFile('resources/t_34_obj.obj');
+            this.object = this.getObjectFromFile();
             this.object.rotateY(-Math.PI / 4);
         }
 
@@ -57,109 +59,10 @@
                 [0, 0, 1, 1], [0, 1, 1, 1], [1, 1, 1, 1], [1, 0, 1, 1],
             ];
 
-            [
-                [
-                    "0.000002",
-                    "-1.005551",
-                    "-1.000000",
-                    1
-                ],
-                [
-                    "-0.000002",
-                    "-3.005551",
-                    "0.000000",
-                    1
-                ],
-                [
-                    "-0.781830",
-                    "-1.005550",
-                    "-0.623490",
-                    1
-                ],
-                [
-                    "-0.974926",
-                    "-1.005550",
-                    "0.222521",
-                    1
-                ],
-                [
-                    "-0.433882",
-                    "-1.005551",
-                    "0.900969",
-                    1
-                ],
-                [
-                    "0.433885",
-                    "-1.005552",
-                    "0.900969",
-                    1
-                ],
-                [
-                    "0.974929",
-                    "-1.005553",
-                    "0.222521",
-                    1
-                ],
-                [
-                    "0.781833",
-                    "-1.005553",
-                    "-0.623490",
-                    1
-                ],
-                [
-                    "0.781833",
-                    "1.025846",
-                    "0.623489",
-                    1
-                ],
-                [
-                    "0.974929",
-                    "1.025848",
-                    "-0.222521",
-                    1
-                ],
-                [
-                    "0.433885",
-                    "1.025848",
-                    "-0.900969",
-                    1
-                ],
-                [
-                    "-0.433882",
-                    "1.025846",
-                    "-0.900969",
-                    1
-                ],
-                [
-                    "-0.974926",
-                    "1.025845",
-                    "-0.222521",
-                    1
-                ],
-                [
-                    "-0.781830",
-                    "1.025844",
-                    "0.623489",
-                    1
-                ],
-                [
-                    "-0.000002",
-                    "3.025846",
-                    "0.000002",
-                    1
-                ],
-                [
-                    "0.000002",
-                    "1.025844",
-                    "1.000000",
-                    1
-                ]
-            ]
-
             let faces = [
-                [0, 1, 2, 3], [4, 5, 6, 7], [0, 4, 5, 1], [2, 3, 7, 6],[1,2,6,5],[0,3,7,4]
+                [0, 1, 2, 3, "Blue"], [4, 5, 6, 7, "Red"], [0, 4, 5, 1, "Green"], [2, 3, 7, 6, "Yellow"],[1,2,6,5, "Red"],[0,3,7,4, "Green"]
             ];
-            return new Object3D(this, vertices, faces, material);
+            return new Object3D(this, vertices, faces, []);
         }
 
         draw() {

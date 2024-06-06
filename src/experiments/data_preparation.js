@@ -1,4 +1,4 @@
-class DataHandler {
+class ObjDataHandler {
 
     /**
      * Constructor
@@ -39,27 +39,6 @@ class DataHandler {
         }).reverse();
     }
 
-    // scale(data) {
-    //     let scale = this.#calculateScale(data.max);
-    //     // loop over vertices and scale them
-    //     for (let i = 0; i < data.vert.length; i++) {
-    //         for (let j = 0; j < data.vert[i].length; j++) {
-    //             data.vert[i][j] = data.vert[i][j] * scale;
-    //         }
-    //     }
-    //     return data.vert;
-    // }
-
-    // #calculateScale(max) {
-    //     let dim;
-    //     if (this.canvas.width < this.canvas.height) {
-    //         dim = this.canvas.width;
-    //     } else {
-    //         dim = this.canvas.height;
-    //     }
-    //     return Math.round((0.95 * dim) / (2 * max));
-    // };
-
     addHomogeneous(vert) {
         let i = 0;
         let vertHom = new Array(vert.length);
@@ -71,13 +50,11 @@ class DataHandler {
     }
 }
 
-class Drawer {
-    drawVertices = true;
+class ObjectDrawer {
     shouldLimitScreen = false;
 
-    constructor(ctx, vertices, faces, materials) {
-        this.ctx = ctx;
-        this.vertices = vertices;
+    constructor(render, faces, materials) {
+        this.render = render;
         this.faces = faces;
         this.materials = materials;
     }
@@ -99,7 +76,7 @@ class Drawer {
         );
     }
 
-    drawWork() {
+    drawObj(vertices) {
         let pointColor = "rgba(10, 10, 10, 1)";
         let edgeColor = "rgba(100, 70, 70, 1)";
         let defaultColor = "rgba(180, 180, 255, .6)";
@@ -107,49 +84,49 @@ class Drawer {
         const drawPoints = true
         const drawFaces = true
         let vertSize = 10; //Make it even: at small scales will look better
-        const vertices = this.vertices;
-        const ctx = this.ctx;
+        const ctx = this.render.ctx;
         this.faces.forEach(({color, face}) => {
             const polygon = face.map(index => vertices[index]);
 
-            if (this.#isWithinScreen(polygon)) {
-                ctx.strokeStyle = edgeColor;
-                ctx.fillStyle = pointColor;
-                ctx.beginPath();
-                let x = polygon[0][0];
-                let y = polygon[0][1];
-                ctx.moveTo(x, y);
-                for (let i = 1; i < polygon.length; i++) {
-                    const point = polygon[i];
-                    ctx.lineTo(point[0], point[1]);
-                    if (drawPoints) {
-                        let x = point[0] - (vertSize / 2);
-                        let y = point[1] - (vertSize / 2);
-                        ctx.fillRect(x, y, vertSize, vertSize);
-                    }
+            if (!this.#isWithinScreen(polygon)) {
+                return;
+            }
+            ctx.strokeStyle = edgeColor;
+            ctx.fillStyle = pointColor;
+            ctx.beginPath();
+            let x = polygon[0][0];
+            let y = polygon[0][1];
+            ctx.moveTo(x, y);
+            for (let i = 1; i < polygon.length; i++) {
+                const point = polygon[i];
+                ctx.lineTo(point[0], point[1]);
+                if (drawPoints) {
+                    let x = point[0] - (vertSize / 2);
+                    let y = point[1] - (vertSize / 2);
+                    ctx.fillRect(x, y, vertSize, vertSize);
                 }
-                ctx.closePath();
-                ctx.stroke();
-                this.#useMtlMaterial(color, ctx, faceAlpha, defaultColor);
-                if (drawFaces) {
-                    ctx.fill();
-                }
+            }
+            ctx.closePath();
+            ctx.stroke();
+            this.#useMtlMaterial(color, faceAlpha, defaultColor);
+            if (drawFaces) {
+                ctx.fill();
             }
         });
     }
 
 
-    #useMtlMaterial(faceColor, ctx, faceAlpha, defaultFaceColor) {
+    #useMtlMaterial(faceColor, faceAlpha, defaultFaceColor) {
         if (!this.materials || this.materials.length === 0) {
-            ctx.fillStyle = "#999";
+            this.render.ctx.fillStyle = defaultFaceColor;
             return;
         }
         let rgbColor = this.#getRgbColor(faceColor);
         if (!rgbColor) {
-            ctx.fillStyle = defaultFaceColor;
+            this.render.ctx.fillStyle = defaultFaceColor;
             return;
         }
-        ctx.fillStyle = "rgba(" + rgbColor.r + ", " + rgbColor.g + ", " + rgbColor.b + ", " + faceAlpha + ")";
+        this.render.ctx.fillStyle = "rgba(" + rgbColor.r + ", " + rgbColor.g + ", " + rgbColor.b + ", " + faceAlpha + ")";
     }
 
     #getRgbColor(faceColor) {

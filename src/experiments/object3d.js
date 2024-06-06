@@ -13,15 +13,15 @@ class Object3D {
         this.vertices = vertices;
         this.faces = faces;
         this.materials = materials;
-        this.shouldLimitScreen = shouldLimitScreen;
         this.translate([0.0001, 0.0001, 0.0001]);
         this.colorFaces = this.faces.map(face => {
             let color = face[face.length - 1];
             let onlyFaces = face.slice(0, face.length - 1);
-            return { color: color,face: onlyFaces }
+            return {color: color, face: onlyFaces}
         });
         this.movementFlag = true;
         this.drawVertices = true;
+        this.drawer = new ObjectDrawer(this.render, this.colorFaces, this.materials);
     }
 
     draw() {
@@ -82,47 +82,8 @@ class Object3D {
         this.#draw(vertices);
     }
 
-    /**
-     * Check if the vertices are within the screen
-     * @param {number[][]}vertices
-     * @returns {boolean}
-     */
-    #isWithinScreen(vertices) {
-        if (!this.shouldLimitScreen) {
-            return true;
-        }
-        // Check if all the vertices are within the screen [-1, 1]
-        return vertices.every(vertex => vertex[0] > 0 &&
-            vertex[0] < this.render.WIDTH
-            && vertex[1] > 0 && vertex[1] < this.render.HEIGHT
-        );
-    }
-
     #draw(vertices) {
-        let drawer = new Drawer(this.render.ctx, vertices, this.colorFaces, this.materials);
-        drawer.drawWork(this.render.ctx, vertices, this.colorFaces)
-        // drawer.draw(true, this.render.ctx);
-
-        // this.drawWork(this.render.ctx, vertices, this.colorFaces);
-    }
-
-    drawWork(ctx, vertices, faces) {
-        faces.forEach(({color, face}) => {
-            const polygon = face.map(index => vertices[index]);
-
-            if (this.#isWithinScreen(polygon)) {
-                ctx.strokeStyle = color;
-                ctx.beginPath();
-                let x = polygon[0][0];
-                let y = polygon[0][1];
-                ctx.moveTo(x, y);
-                for (let i = 1; i < polygon.length; i++) {
-                    ctx.lineTo(polygon[i][0], polygon[i][1]);
-                }
-                ctx.closePath();
-                ctx.stroke();
-            }
-        });
+        this.drawer.drawObj(vertices)
     }
 
     /**

@@ -325,11 +325,43 @@ class World {
     }
 
     draw3dItems(ctx, viewPoint, buildings, trees) {
+        const {allCeilings, allRoofPolys, allSides, allBases} = this.#getAllBuildingsPolys(buildings, viewPoint);
+        for (const b of allBases) {
+            b.draw(ctx, {
+                fill: "rgba(0,0,0,0)",
+                stroke: "rgba(0,0,0,0.2)",
+                lineWidth: 10,
+            });
+        }
+        for (const s of allSides) {
+            s.base = s.segments[0];
+        }
+        const items = [...allSides, ...trees];
+        items.sort((a, b) =>
+            b.base.distanceToPoint(viewPoint) -
+            a.base.distanceToPoint(viewPoint)
+        );
+        for (const item of items) {
+            if (item instanceof Tree) {
+                item.draw(ctx, viewPoint);
+            } else {
+                // Sides
+                item.draw(ctx, {
+                    fill: "#BBB",
+                    stroke: "#555",
+                    join: "round",
+                });
+            }
+        }
+        this.#drawTopOfBuildings(allCeilings, ctx, allRoofPolys, viewPoint);
+
+    }
+
+    #getAllBuildingsPolys(buildings, viewPoint) {
         const allCeilings = [];
         const allRoofPolys = [];
         const allSides = [];
         const allBases = [];
-        const treeBases = [];
         for (const b of buildings) {
             if (!b) {
                 continue;
@@ -340,117 +372,53 @@ class World {
             allCeilings.push(ceiling);
             allRoofPolys.push(...roofPolys);
         }
+        return {allCeilings, allRoofPolys, allSides, allBases};
+    }
 
-        for (const t of trees) {
-            treeBases.push(t.base);
-        }
-
-        if (this.drawContents.includes("3d")) {
-            for (const b of allBases) {
-                b.draw(ctx, {
-                    fill: "rgba(0,0,0,0)",
-                    stroke: "rgba(0,0,0,0.2)",
-                    lineWidth: 10,
+    #drawTopOfBuildings(allCeilings, ctx, allRoofPolys, viewPoint) {
+        for (const c of allCeilings) {
+            if (c.dark) {
+                c.draw(ctx, {
+                    fill: "#BBB",
+                    stroke: "#BBB",
+                    join: "round",
+                    lineWidth: 6,
                 });
-                if (b.floorPlan) {
-                    ctx.drawImage(
-                        b.floorPlan,
-                        b.floorPlanLoc.x + b.floorPlanOffset.x - b.floorPlanSize / 2,
-                        b.floorPlanLoc.y + b.floorPlanOffset.y - b.floorPlanSize / 2,
-                        b.floorPlanSize,
-                        b.floorPlanSize
-                    );
-                    //ctx.drawImage(c.img,center.x,center.y,100,100);
-                    //center.draw(ctx);
-                }
-            }
-        } else {
-            for (const b of allBases) {
-                b.draw(ctx, {
+            } else {
+                c.draw(ctx, {
                     fill: "#DDD",
                     stroke: "#555",
+                    join: "round",
                 });
+
             }
-            for (const t of treeBases) {
-                t.draw(ctx, {
-                    fill: "#4F9",
-                    stroke: "green",
-                });
+
+            if (c.img) {
+                ctx.drawImage(
+                    c.img,
+                    c.imgLoc.x - c.imgSize / 2,
+                    c.imgLoc.y - c.imgSize / 2,
+                    c.imgSize,
+                    c.imgSize
+                );
             }
+            ctx.globalAlpha = 1;
         }
 
-        if (this.drawContents.includes("3d")) {
-            for (const s of allSides) {
-                s.base = s.segments[0];
-            }
-            const items = [...allSides, ...trees];
-            //this.items=items;
-            items.sort(
-                (a, b) =>
-                    b.base.distanceToPoint(viewPoint) -
-                    a.base.distanceToPoint(viewPoint)
-            );
-            allRoofPolys.sort(
-                (a, b) =>
-                    b.distanceToPoint(viewPoint) - a.distanceToPoint(viewPoint)
-            );
-            for (const item of items) {
-                if (item instanceof Tree) {
-                    item.draw(ctx, viewPoint);
-                } else {
-                    //side
-                    item.draw(ctx, {
-                        fill: "#BBB",
-                        stroke: "#555",
-                        join: "round",
-                    });
-                }
-            }
-
-            for (const c of allCeilings) {
-
-                if (c.dark) {
-                    c.draw(ctx, {
-                        fill: "#BBB",
-                        stroke: "#BBB",
-                        join: "round",
-                        lineWidth: 6,
-                    });
-                } else {
-                    c.draw(ctx, {
-                        fill: "#DDD",
-                        stroke: "#555",
-                        join: "round",
-                    });
-
-                }
-
-                if (c.img) {
-                    ctx.drawImage(
-                        c.img,
-                        c.imgLoc.x - c.imgSize / 2,
-                        c.imgLoc.y - c.imgSize / 2,
-                        c.imgSize,
-                        c.imgSize
-                    );
-                }
-                ctx.globalAlpha = 1;
-            }
-
-            for (const poly of allRoofPolys) {
-                poly.draw(ctx, {
-                    fill: "#E88",
-                    stroke: "#555",
-                    lineWidth: 6,
-                    join: "round",
-                });
-                poly.draw(ctx, {
-                    fill: "#E88",
-                    stroke: "#E88",
-                    lineWidth: 2,
-                    join: "round",
-                });
-            }
+        allRoofPolys.sort((a, b) => b.distanceToPoint(viewPoint) - a.distanceToPoint(viewPoint));
+        for (const poly of allRoofPolys) {
+            poly.draw(ctx, {
+                fill: "#E88",
+                stroke: "#555",
+                lineWidth: 6,
+                join: "round",
+            });
+            poly.draw(ctx, {
+                fill: "#E88",
+                stroke: "#E88",
+                lineWidth: 2,
+                join: "round",
+            });
         }
     }
 
@@ -475,139 +443,71 @@ class World {
         }
 
         //ctx.globalAlpha=0.5;
-        if (!this.grid || useGrid == false) {
-            this.#drawCars(ctx, optimizing, null, true);
-            if (this.drawContents.includes("envelopes")) {
-                for (const env of this.envelopes) {
-                    env.draw(ctx, {
-                        fill: "#BBB",
-                        stroke: "#BBB",
-                        lineWidth: 15,
-                    });
-                }
-            }
-            if (this.drawContents.includes("markings")) {
-                for (const marking of this.markings) {
-                    if (
-                        !(marking instanceof Start || marking instanceof Target) ||
-                        showStartMarkings
-                    ) {
-                        marking.draw(ctx);
-                    }
-                }
-            }
-            if (this.drawContents.includes("envelopes")) {
-                for (const seg of this.graph.segments) {
-                    seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
-                }
-                for (const seg of this.roadBorders) {
-                    seg.draw(ctx, {color: "white", width: 4});
-                }
-            }
 
-            this.#drawCars(ctx, optimizing, null);
+        this.#drawCars(ctx, optimizing, null, true);
 
-            if (this.drawContents.includes("items")) {
-                const rad = 3000;
-                const buildings = this.buildings.filter(
-                    (b) => b.base.distanceToPoint(viewPoint) < rad
-                );
-                const trees = this.trees.filter(
-                    (b) => b.base.distanceToPoint(viewPoint) < rad
-                );
-
-                this.draw3dItems(ctx, viewPoint, buildings, trees);
-            }
-
-            if (this.drawContents.includes("envelopes")) {
-                for (const seg of this.graph.segments.filter((e) => e.layer == 1)) {
-                    if (!seg) {
-                        continue
-                    }
-                    seg.draw(ctx, {
-                        color: "#BBB",
-                        width: this.roadWidth + 15,
-                    });
-                }
-
-                for (const seg of this.graph.segments.filter((b) => b.layer == 1)) {
-                    if (!seg) {
-                        continue
-                    }
-                    seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
-                }
-
-                for (const seg of this.roadBorders.filter((b) => b.layer == 1)) {
-                    if (!seg) {
-                        continue
-                    }
-                    seg.draw(ctx, {color: "white", width: 4});
-                }
-            }
-
-            this.#drawCars(ctx, optimizing, 1);
-        } else {
-            const data = grid.getDataFromCellsInActiveRegion(activeRegion);
-            this.#drawCars(ctx, optimizing, null, true);
-
-            if (this.drawContents.includes("envelopes")) {
-                for (const env of data.envelopes) {
-                    env.draw(ctx, {
-                        fill: "#BBB",
-                        stroke: "#BBB",
-                        lineWidth: 15,
-                    });
-                }
-            }
-
-            if (this.drawContents.includes("markings")) {
-                for (const marking of data.markings) {
-                    if (!marking) {
-                        continue
-                    }
-                    if (!(marking instanceof Start || marking instanceof Target) || showStartMarkings
-                    ) {
-                        marking.draw(ctx);
-                    }
-                }
-            }
-
-            if (this.drawContents.includes("envelopes")) {
-                for (const seg of data.graphSegments) {
-                    if (!seg) {
-                        continue
-                    }
-                    seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
-                }
-                for (const seg of data.roadBorders) {
-                    if (!seg) {
-                        continue
-                    }
-                    seg.draw(ctx, {color: "white", width: 4});
-                }
-            }
-            this.#drawCars(ctx, optimizing, null);
-
-            if (this.drawContents.includes("items")) {
-                this.draw3dItems(ctx, viewPoint, data.buildings, data.trees);
-            }
-
-            if (this.drawContents.includes("envelopes")) {
-                for (const seg of data.graphSegments.filter((e) => e && e.layer == 1)) {
-                    seg.draw(ctx, {
-                        color: "#BBB",
-                        width: this.roadWidth + 15,
-                    });
-                }
-                for (const seg of data.graphSegments.filter((e) => e && e.layer == 1)) {
-                    seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
-                }
-                for (const seg of data.roadBorders.filter((e) => e && e.layer == 1)) {
-                    seg.draw(ctx, {color: "white", width: 4});
-                }
-            }
-
-            this.#drawCars(ctx, optimizing, 1);
+        for (const env of this.envelopes) {
+            env.draw(ctx, {
+                fill: "#BBB",
+                stroke: "#BBB",
+                lineWidth: 15,
+            });
         }
+
+
+        for (const marking of this.markings) {
+            if (
+                !(marking instanceof Start || marking instanceof Target) ||
+                showStartMarkings
+            ) {
+                marking.draw(ctx);
+            }
+        }
+
+
+        for (const seg of this.graph.segments) {
+            seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
+        }
+        for (const seg of this.roadBorders) {
+            seg.draw(ctx, {color: "white", width: 4});
+        }
+
+
+        this.#drawCars(ctx, optimizing, null);
+        const rad = 3000;
+        const buildings = this.buildings.filter(
+            (b) => b.base.distanceToPoint(viewPoint) < rad
+        );
+        const trees = this.trees.filter(
+            (b) => b.base.distanceToPoint(viewPoint) < rad
+        );
+
+        this.draw3dItems(ctx, viewPoint, buildings, trees);
+
+
+        for (const seg of this.graph.segments.filter((e) => e.layer == 1)) {
+            if (!seg) {
+                continue
+            }
+            seg.draw(ctx, {
+                color: "#BBB",
+                width: this.roadWidth + 15,
+            });
+        }
+
+        for (const seg of this.graph.segments.filter((b) => b.layer == 1)) {
+            if (!seg) {
+                continue
+            }
+            seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
+        }
+
+        for (const seg of this.roadBorders.filter((b) => b.layer == 1)) {
+            if (!seg) {
+                continue
+            }
+            seg.draw(ctx, {color: "white", width: 4});
+        }
+        this.#drawCars(ctx, optimizing, 1);
     }
 }

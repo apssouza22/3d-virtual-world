@@ -314,7 +314,7 @@ class World {
                     ? "green"
                     : "yellow";
             for (let i = 0; i < center.lights.length; i++) {
-                if (i == greenYellowIndex) {
+                if (i === greenYellowIndex) {
                     center.lights[i].state = greenYellowState;
                 } else {
                     center.lights[i].state = "red";
@@ -433,19 +433,12 @@ class World {
         viewPoint,
         showStartMarkings = true,
         activeRegion,
-        optimizing = false,
-        useGrid = true
+        optimizing = false
     ) {
         this.#updateLights();
-
         if (this.water) {
             this.water.draw(ctx);
         }
-
-        //ctx.globalAlpha=0.5;
-
-        this.#drawCars(ctx, optimizing, null, true);
-
         for (const env of this.envelopes) {
             env.draw(ctx, {
                 fill: "#BBB",
@@ -453,17 +446,11 @@ class World {
                 lineWidth: 15,
             });
         }
-
-
         for (const marking of this.markings) {
-            if (
-                !(marking instanceof Start || marking instanceof Target) ||
-                showStartMarkings
-            ) {
+            if (!(marking instanceof Start || marking instanceof Target) || showStartMarkings) {
                 marking.draw(ctx);
             }
         }
-
 
         for (const seg of this.graph.segments) {
             seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
@@ -471,9 +458,6 @@ class World {
         for (const seg of this.roadBorders) {
             seg.draw(ctx, {color: "white", width: 4});
         }
-
-
-        this.#drawCars(ctx, optimizing, null);
         const rad = 3000;
         const buildings = this.buildings.filter(
             (b) => b.base.distanceToPoint(viewPoint) < rad
@@ -483,29 +467,11 @@ class World {
         );
 
         this.draw3dItems(ctx, viewPoint, buildings, trees);
-
-
-        for (const seg of this.graph.segments.filter((e) => e.layer == 1)) {
-            if (!seg) {
-                continue
-            }
-            seg.draw(ctx, {
-                color: "#BBB",
-                width: this.roadWidth + 15,
-            });
-        }
-
         for (const seg of this.graph.segments.filter((b) => b.layer == 1)) {
-            if (!seg) {
-                continue
-            }
             seg.draw(ctx, {color: "white", width: 4, dash: [10, 10]});
         }
 
         for (const seg of this.roadBorders.filter((b) => b.layer == 1)) {
-            if (!seg) {
-                continue
-            }
             seg.draw(ctx, {color: "white", width: 4});
         }
         this.#drawCars(ctx, optimizing, 1);

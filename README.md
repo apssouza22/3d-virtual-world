@@ -4,6 +4,10 @@ A virtual world in JavaScript from scratch.
 This project try to simulate a virtual world similar to google maps using only vanilla JavaScript. 
 The project offer the top view of the world and the 3D view of the world(street view like).  
 
+## Live Demo
+ - Access the live demo [here](https://apssouza22.github.io/3d-virtual-world/)
+
+
 <img src="virtual-world.png">
 
 ## generate the map from your location
